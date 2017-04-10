@@ -1,3 +1,7 @@
 theme: jekyll-theme-cayman
 title: [Cache Coherence Protocols Analyzer]
-show_downloads: ["false"]
+description: [An analyzer for Cache Coherence Protocols under varying workloads.<br>
+              Kshitiz Dange (kdange)  |  Yash Tibrewal (ytibrewa)]
+
+proposal_page: proposal-page
+authors_page: authors-page
