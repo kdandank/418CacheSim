@@ -1,11 +1,34 @@
 ## 1. REVISED SCHEDULE
-> Apr 11 - Apr 17 - Study different snooping protocols, discuss how we could enhance the project <br>
-> Apr 18 - Apr 24 - Make test programs, use Intel Pintool to generate traces for the test programs <br>
-> Apr 25 - May 01 - Implement LRU cache for single processor (less work owing to exams) <br>
-> May 02 - May 04 - Add support for cache coherence protocols - MSI, MESI <br>
-> May 05 - May 07 - Add additional protocols - MOSI, MOESI, Dragon, Firefly, etc. <br>
-> May 07 - May 09 - Prepare analysis report <br>
-> May 10 - May 11 - Project Presentation Preparation <br>
+<table style="width:100%">
+  <tr>
+    <td>04/11 - 04/17</td>
+    <td>Study different snooping protocols, discuss how we could enhance the project</td>
+  </tr>
+  <tr>
+    <td>04/18 - 04/24</td>
+    <td>Make test programs, use Intel Pintool to generate traces for the test programs</td>
+  </tr>
+  <tr>
+    <td>04/25 - 05/01</td>
+    <td>Implement LRU cache for single processor (less work owing to exams)</td>
+  </tr>
+  <tr>
+    <td>05/02 - 05/04</td>
+    <td>Add support for cache coherence protocols - MSI, MESI</td>
+  </tr>
+  <tr>
+    <td>05/05 - 05/07</td>
+    <td>Add additional protocols - MOSI, MOESI, Dragon, Firefly, etc.</td>
+  </tr>
+  <tr>
+    <td>05/07 - 05/09</td>
+    <td>Prepare analysis report</td>
+  </tr>
+  <tr>
+    <td>05/10 - 05/11</td>
+    <td>Project Presentation Preparation</td>
+  </tr>
+</table>
 
 ## 2. SCHEDULE CHANGES REASON
 > We had earlier thought of making the basic code working before moving on to designing
