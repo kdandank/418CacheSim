@@ -46,12 +46,12 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    wild_add((void *)num_iters);
+
     /* Last thing that main() should do */
     for(int i = 0; i < num_threads - 1; i++) {
         pthread_join(threads[i], NULL);
     }
-
-    global_val += 1;
 
     dummy_instr_end();
 

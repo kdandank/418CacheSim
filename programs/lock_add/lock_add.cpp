@@ -13,7 +13,7 @@ void dummy_instr_end() {
 
 }
 
-void *lock_add_1(void *args) {
+void *lock_add(void *args) {
 
     long count = (long)args;
     for(long i = 0; i < count; i++) {
@@ -44,20 +44,18 @@ int main(int argc, char *argv[]) {
     dummy_instr_start();
 
     for(int t = 0; t < num_threads - 1; t++){
-        rc = pthread_create(&threads[t], NULL, lock_add_1, (void *)num_iters);
+        rc = pthread_create(&threads[t], NULL, lock_add, (void *)num_iters);
         if (rc){
             printf("ERROR; return code from pthread_create() is %d\n", rc);
             exit(-1);
         }
     }
 
+    lock_add((void *)num_iters);
+
     for(int i = 0; i < num_threads - 1; i++) {
         pthread_join(threads[i], NULL);
     }
-
-    pthread_mutex_lock(&lock);
-    global_val += 1;
-    pthread_mutex_unlock(&lock);
 
     dummy_instr_end();
 
