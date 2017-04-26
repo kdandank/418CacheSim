@@ -14,8 +14,8 @@ int num_threads;
 int num_buckets;
 int num_numbers;
 
-int *buckets;
-int *numbers;
+volatile int *buckets;
+volatile int *numbers;
 
 void *fill_buckets(void *arg) {
     pthread_t tid = (pthread_t) arg;
