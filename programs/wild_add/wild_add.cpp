@@ -2,7 +2,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 
-long global_val;
+volatile long global_val;
 
 void dummy_instr_start() {
 
