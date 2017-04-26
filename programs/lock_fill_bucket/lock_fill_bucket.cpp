@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
         pthread_join(tids[i], NULL);
     }
 
-    dummy_instr_start();
+    dummy_instr_end();
 
     /*long sum = 0;
     for(int i = 0; i < num_buckets; i++) {
