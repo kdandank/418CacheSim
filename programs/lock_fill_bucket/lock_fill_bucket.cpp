@@ -8,6 +8,12 @@ int num_threads;
 int num_buckets;
 int num_numbers;
 
+void dummy_instr_start() {
+}
+
+void dummy_instr_end() {
+}
+
 volatile int *buckets;
 volatile int *numbers;
 
@@ -57,13 +63,19 @@ int main(int argc, char *argv[]) {
         numbers[i] = rand() % num_buckets;
     }
 
-    for(int i = 0; i < num_threads; i++) {
+    dummy_instr_start();
+
+    for(int i = 1; i < num_threads; i++) {
         pthread_create(&tids[i], NULL, fill_buckets, (void *) ((long) i ));
     }
 
-    for(int i = 0; i < num_threads; i++) {
+    fill_buckets((void *) ((long) 0));
+
+    for(int i = 1; i < num_threads; i++) {
         pthread_join(tids[i], NULL);
     }
+
+    dummy_instr_start();
 
     /*long sum = 0;
     for(int i = 0; i < num_buckets; i++) {
