@@ -5,6 +5,14 @@
 long global_val;
 pthread_mutex_t lock;
 
+void dummy_instr_start() {
+
+}
+
+void dummy_instr_end() {
+
+}
+
 void *lock_add_1(void *args) {
 
     long count = (long)args;
@@ -13,7 +21,8 @@ void *lock_add_1(void *args) {
         global_val += 1;
         pthread_mutex_unlock(&lock);
     }
-    pthread_exit(NULL);
+
+    return NULL;
 }
 
 int main(int argc, char *argv[]) {
@@ -26,14 +35,15 @@ int main(int argc, char *argv[]) {
     pthread_mutex_init(&lock, NULL);
 
     int rc;
-    long t;
 
     long num_threads = atoi(argv[1]);
     long num_iters = atoi(argv[2]);
-    
+
     pthread_t threads[num_threads];
 
-    for(int t = 0; t < num_threads; t++){
+    dummy_instr_start();
+
+    for(int t = 0; t < num_threads - 1; t++){
         rc = pthread_create(&threads[t], NULL, lock_add_1, (void *)num_iters);
         if (rc){
             printf("ERROR; return code from pthread_create() is %d\n", rc);
@@ -41,7 +51,17 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    for(int i = 0; i < num_threads - 1; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    pthread_mutex_lock(&lock);
+    global_val += 1;
+    pthread_mutex_unlock(&lock);
+
+    dummy_instr_end();
+
     /* Last thing that main() should do */
-    pthread_exit(NULL);
+
     return 0;
 }
