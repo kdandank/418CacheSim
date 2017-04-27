@@ -6,6 +6,9 @@
 
 #define CACHE_LINE_SIZE 4096
 
+CacheLine::CacheLine() {
+}
+
 CacheLine::CacheLine(unsigned int t, unsigned char s) {
     tag = t;
     status = s;

@@ -1,4 +1,10 @@
-#include <iostream.h>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <unistd.h>
+#include <stdlib.h>
+#include "Cache.h"
+#include "Protocol.h"
 
 /**
  * Prints the usage for the program
@@ -9,8 +15,8 @@ void print_usage() {
 }
 
 void process_trace_file(std::string trace_filename) {
-    ifstream trace_file(trace_filename);
-    if(!trace_file) {
+    std::ifstream tracefile(trace_filename.c_str());
+    if(!tracefile) {
         std::cerr << "Could not open file : " << trace_filename << "\n";
         print_usage();
         exit(1);
@@ -31,10 +37,11 @@ void process_trace_file(std::string trace_filename) {
  * @param num_cores The number of cores
  * @return A vector of the cache objects
  */
-std::vector<Cache> create_cache_objects(int num_cores) {
+std::vector<Cache> create_cache_objects(int cache_size, int associativity,
+                                            int num_cores) {
     std::vector<Cache> caches;
     for(int i = 0; i < num_cores; i++) {
-        caches.push_back(Cache());
+        caches.push_back(Cache(cache_size, associativity));
     }
     return caches;
 }
@@ -72,7 +79,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    std::vector<Cache> caches = create_cache_objects(num_cores);
-    Protocol.initialize(protocol, caches);
+    std::vector<Cache> caches = create_cache_objects(cache_size, associativity,
+                                                        num_cores);
+    Protocol::initialize(protocol, caches, num_cores);
     process_trace_file(trace_file);
 }

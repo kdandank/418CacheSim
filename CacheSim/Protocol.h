@@ -1,3 +1,7 @@
+#include <string>
+#include <vector>
+#include "Cache.h"
+
 #ifndef _PROTOCOL_H_
 #define _PROTOCOL_H_
 
@@ -7,17 +11,18 @@ public:
     static pthread_cond_t trace_cv;
     static pthread_cond_t worker_cv;
 
-private:
+protected:
     static Protocol obj;
-    static atomic<bool> ready = false;
+    static bool ready;
     static int request_id;
     static std::string request_op;
-    static unsigned long requeset_addr;
+    static unsigned long request_addr;
     static int num_cores;
     static std::vector<Cache> caches;
     std::vector<pthread_t> req_threads;
     std::vector<pthread_t> resp_threads;
 
+public:
     /**
      * Initialize the Protocol
      */

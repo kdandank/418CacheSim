@@ -1,13 +1,15 @@
+#include "Protocol.h"
+
 #ifndef _MSI_H_
 #define _MSI_H_
 
-class MSI : Protocol {
+class MSI : public Protocol {
 public:
     MSI() ;
 
-    void *request_worker(void *arg);
+    static void *request_worker(void *arg);
 
-    void handle_request(int tid);
+    static void handle_request(int tid);
 };
 
 #endif /* _MSI_H_ */
