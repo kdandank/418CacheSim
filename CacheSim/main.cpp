@@ -26,17 +26,34 @@ void process_trace_file(std::string trace_filename) {
     }
 }
 
+/**
+ * Creates num_cores number of cache objects
+ * @param num_cores The number of cores
+ * @return A vector of the cache objects
+ */
+std::vector<Cache> create_cache_objects(int num_cores) {
+    std::vector<Cache> caches;
+    for(int i = 0; i < num_cores; i++) {
+        caches.push_back(Cache());
+    }
+    return caches;
+}
+
 int main(int argc, char *argv[]) {
     int ch;
+    int num_cores = 1;
     int cache_size = 128;
     int associativity = 4;
     std::string protocol = "MSI";
     std::string trace_file = "trace.out";
 
     /* Read arguments from command line */
-    while((ch = getopt(argc, argv, "c:a:p:t:")) != -1) {
+    while((ch = getopt(argc, argv, "c:s:a:p:t:")) != -1) {
         switch(ch) {
             case 'c':
+                num_cores = atoi(optarg);
+                break;
+            case 's':
                 cache_size = atoi(optarg);
                 break;
             case 'a':
@@ -55,5 +72,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    std::vector<Cache> caches = create_cache_objects(num_cores);
+    Protocol.initialize(protocol, caches);
     process_trace_file(trace_file);
 }
