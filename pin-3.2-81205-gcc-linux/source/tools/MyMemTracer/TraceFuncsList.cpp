@@ -150,7 +150,6 @@ VOID Routine(RTN rtn, VOID *v) {
 
 VOID Fini(INT32 code, VOID *v)
 {
-    fprintf(trace, "#eof\n");
     fclose(trace);
 }
 
