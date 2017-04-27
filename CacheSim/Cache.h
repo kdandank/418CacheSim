@@ -14,6 +14,7 @@ class CacheLine
         unsigned char status;
         unsigned int lru_num;
 
+        CacheLine();
         CacheLine(unsigned int t, unsigned char s);
         ~CacheLine();
 };
@@ -23,8 +24,9 @@ class Set
     public:
         unsigned int current_lru;
         std::vector<CacheLine> cl;
-        Set(unsigned int ass) {
 
+        Set();
+        Set(unsigned int ass);
         ~Set();
 };
 
@@ -37,7 +39,9 @@ class Cache
         unsigned int associativity;
         std::vector<Set> sets;
     public:
-        Cache::Cache(unsigned int size, unsigned int ass);
+
+        Cache();
+        Cache(unsigned int size, unsigned int ass);
         ~Cache();
 
         void update_cache_lru(unsigned int addr);

@@ -1,6 +1,7 @@
 #include <vector>
 #include <math.h>
 #include <assert.h>
+#include <limits.h>
 #include "Cache.h"
 
 #define CACHE_LINE_SIZE 4096
