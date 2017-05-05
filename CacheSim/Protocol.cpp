@@ -42,12 +42,15 @@ void Protocol::initialize(std::string protocol,
 void Protocol::process_mem_access(int thread_id, std::string op,
                                             unsigned long addr) {
     pthread_mutex_lock(&lock);
+    //std::cout<<"Protocol waiting\n";
     while(ready) {
         pthread_cond_wait(&trace_cv, &lock);
     }
+    //std::cout<<"Protocol done waiting\n";
     request_id = thread_id;
     request_op = op;
     request_addr = addr;
     ready = true;
     pthread_cond_broadcast(&worker_cv);
+    pthread_mutex_unlock(&lock);
 }

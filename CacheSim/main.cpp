@@ -27,8 +27,11 @@ void process_trace_file(std::string trace_filename) {
     unsigned long addr;
 
     while(tracefile >> thread_id) {
+        //std::cout<<"new access\n";
+        //fflush(stdout);
         tracefile >> op;
         tracefile >> std::hex >> addr;
+        Protocol::process_mem_access(thread_id, op, addr);
     }
 }
 
