@@ -12,23 +12,29 @@ MSI::MSI() {
 
 void *MSI::request_worker(void *arg) {
     long tid = (long) arg;
+    std::string op;
+    unsigned long addr;
+
     pthread_mutex_lock(&lock);
     while(!ready) {
         pthread_cond_wait(&worker_cv, &lock);
     }
     if(request_id == tid) {
+        op = Protocol::request_op;
+        addr = Protocol::request_addr;
+
         ready = false;
-        pthread_cond_signal(&trace_cv);
-        handle_request(tid);
+        pthread_cond_signal(&Protocol::trace_cv);
+        handle_request(tid, op, addr);
     }
     return NULL;
 }
 
-void MSI::handle_request(int tid) {
-    char status = caches[tid].cache_status(request_addr);
+void MSI::handle_request(int tid, std::string op, unsigned long addr) {
+    char status = Protocol::caches[tid].cache_status(addr);
     if(status == 'I') {
-        caches[tid].update_cache_lru(request_addr);
+        Protocol::caches[tid].update_cache_lru(addr);
     } else {
-        caches[tid].insert_cache(request_addr, status);
+        Protocol::caches[tid].insert_cache(addr, status);
     }
 }

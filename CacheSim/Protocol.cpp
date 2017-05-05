@@ -7,6 +7,17 @@
 #include "Cache.h"
 
 
+pthread_mutex_t Protocol::lock;
+pthread_cond_t Protocol::trace_cv;
+pthread_cond_t Protocol::worker_cv;
+Protocol Protocol::obj;
+bool Protocol::ready;
+int Protocol::request_id;
+std::string Protocol::request_op;
+unsigned long Protocol::request_addr;
+int Protocol::num_cores;
+std::vector<Cache> Protocol::caches;
+
 /**
  * Initialize the Protocol
  */

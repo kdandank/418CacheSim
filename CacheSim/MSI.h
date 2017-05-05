@@ -9,7 +9,8 @@ public:
 
     static void *request_worker(void *arg);
 
-    static void handle_request(int tid);
+    static void handle_request(int tid, std::string op,
+                                    unsigned long addr);
 };
 
 #endif /* _MSI_H_ */

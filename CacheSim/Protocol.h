@@ -8,8 +8,8 @@
 class Protocol {
 public:
     static pthread_mutex_t lock;
-    static pthread_cond_t trace_cv;
-    static pthread_cond_t worker_cv;
+    static pthread_cond_t trace_cv; /* Signal mem acc processor to continue */
+    static pthread_cond_t worker_cv; /* Signal workers for a new access */
 
 protected:
     static Protocol obj;
