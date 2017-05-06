@@ -1,13 +1,13 @@
 CXX=g++
-CPPFLAGS=-std=c++11 -lpthread
-OBJS=Bus.o Cache.o MSI.o Protocol.o main.o
+CPPFLAGS=-std=c++11 -pthread
+OBJS=Memory.o Bus.o Cache.o MSI.o Protocol.o main.o
 # This line complies the code and creates the binary
 
 %o: %.cpp
-	$(CXX) $(CPPFLAGS) -c $<
+	$(CXX) -c $< $(CPPFLAGS)
 
 run_cacheSim: $(OBJS)
-	$(CXX) $(CPPFLAGS) $(OBJS) -o $@
+	$(CXX) $(OBJS) -o $@ $(CPPFLAGS)
 
 clean:
 	rm -f *.o run_cacheSim
