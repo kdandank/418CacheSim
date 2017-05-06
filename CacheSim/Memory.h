@@ -20,6 +20,8 @@ private:
     static pthread_cond_t req_cv;
 
     static void *memory_worker(void *arg);
+
+public:
     static void initialize();
     static void request(unsigned long addr);
 };

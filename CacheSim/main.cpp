@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include "Cache.h"
 #include "Protocol.h"
+#include "Bus.h"
+#include "Memory.h"
 
 /**
  * Prints the usage for the program
@@ -86,5 +88,7 @@ int main(int argc, char *argv[]) {
     std::vector<Cache> caches = create_cache_objects(cache_size, associativity,
                                                         num_cores);
     Protocol::initialize(protocol, caches, num_cores);
+    Bus::init();
+    Memory::initialize();
     process_trace_file(trace_file);
 }
