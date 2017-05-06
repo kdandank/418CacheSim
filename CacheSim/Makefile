@@ -1,9 +1,9 @@
 CXX=g++
 CPPFLAGS=-std=c++11 -lpthread
-OBJS=Cache.o MSI.o Protocol.o main.o
+OBJS=Bus.o Cache.o MSI.o Protocol.o main.o
 # This line complies the code and creates the binary
 
-%o: %.cpp 
+%o: %.cpp
 	$(CXX) $(CPPFLAGS) -c $<
 
 run_cacheSim: $(OBJS)
