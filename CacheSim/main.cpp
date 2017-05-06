@@ -43,6 +43,7 @@ void process_trace_file(std::string trace_filename) {
 std::vector<Cache> create_cache_objects(int cache_size, int associativity,
                                             int num_cores) {
     std::vector<Cache> caches;
+    Cache::cache_init(cache_size, associativity);
     for(int i = 0; i < num_cores; i++) {
         caches.push_back(Cache(cache_size, associativity));
     }

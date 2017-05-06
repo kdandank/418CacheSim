@@ -6,15 +6,19 @@
 
 #define CACHE_LINE_SIZE 4096
 
-CacheLine::CacheLine() {
-}
+unsigned int Cache::cache_lines;
+unsigned int Cache::cache_size;
+unsigned int Cache::associativity;
+unsigned int Cache::block_bits;
+unsigned long Cache::num_set;
+unsigned int Cache::set_bits;
+unsigned long Cache::set_mask;
 
 CacheLine::CacheLine(unsigned int t, unsigned char s) {
     tag = t;
     status = s;
     lru_num = 0;
 }
-
 
 Set::Set(unsigned int ass) {
     current_lru = 0;
@@ -26,8 +30,6 @@ Set::Set(unsigned int ass) {
 }
 
 Cache::Cache(unsigned int size, unsigned int ass) {
-    cache_size = size;
-    associativity = ass;
     //unsigned int line_size = cache_size / CACHE_LINE_SIZE;
     unsigned int num_sets = size / ass;
 
@@ -40,20 +42,27 @@ Cache::Cache(unsigned int size, unsigned int ass) {
     }
 }
 
-void Cache::update_cache_lru(unsigned int addr) {
+void Cache::cache_init(unsigned int size, unsigned int ass) {
 
-    unsigned int block_bits = 12;
-    unsigned int num_set = cache_size / associativity; // MUST be a power of 2
-    unsigned int set_bits = log2(num_set) + 1;
-    unsigned int set_mask = (num_set - 1) << block_bits;
-    unsigned int set = (addr & set_mask) >> block_bits;
-    unsigned int tag_mask = ~((1 << (set_bits + block_bits)) - 1);
-    unsigned int tag = (addr & tag_mask) >> (set_bits + block_bits);
+    cache_size = size;
+    associativity = ass;
+    cache_lines = 0;
+    block_bits = 12;
+    num_set = cache_size / associativity; // MUST be a power of 2
+    set_bits = log2(num_set) + 1;
+    set_mask = (num_set - 1) << block_bits;
+}
 
-    Set s = sets[set];
+void Cache::update_cache_lru(unsigned long addr) {
+
+    unsigned long set = (addr & set_mask) >> block_bits;
+    unsigned long tag_mask = ~((1 << (set_bits + block_bits)) - 1);
+    unsigned long tag = (addr & tag_mask) >> (set_bits + block_bits);
+
+    Set &s = sets[set];
     bool found_line = false;
 
-    for(CacheLine c: s.cl) {
+    for(CacheLine &c: s.cl) {
         if(c.tag == tag) {
             found_line = true;
 
@@ -62,6 +71,7 @@ void Cache::update_cache_lru(unsigned int addr) {
 
             // Update the cache line
             c.lru_num = s.current_lru;
+            break;
         }
     }
 
@@ -71,21 +81,17 @@ void Cache::update_cache_lru(unsigned int addr) {
     }
 }
 
-void Cache::insert_cache(unsigned int addr, unsigned char status) {
+void Cache::insert_cache(unsigned long addr, unsigned char status) {
 
-    unsigned int block_bits = 12;
-    unsigned int num_set = cache_size / associativity; // MUST be a power of 2
-    unsigned int set_bits = log2(num_set) + 1;
-    unsigned int set_mask = (num_set - 1) << block_bits;
-    unsigned int set = (addr & set_mask) >> block_bits;
-    unsigned int tag_mask = ~((1 << (set_bits + block_bits)) - 1);
-    unsigned int tag = (addr & tag_mask) >> (set_bits + block_bits);
+    unsigned long set = (addr & set_mask) >> block_bits;
+    unsigned long tag_mask = ~((1 << (set_bits + block_bits)) - 1);
+    unsigned long tag = (addr & tag_mask) >> (set_bits + block_bits);
 
-    Set s = sets[set];
+    Set &s = sets[set];
     bool found_line = false;
 
     // First try to find an 'Invalid' line
-    for(CacheLine c : s.cl) {
+    for(CacheLine &c : s.cl) {
         if(c.status == 'I') {
             // This line can be evicted
             found_line = true;
@@ -98,6 +104,8 @@ void Cache::insert_cache(unsigned int addr, unsigned char status) {
             c.status = status;
             c.lru_num = s.current_lru;
 
+            break;
+
         } else if (c.tag == tag) {
             // It should not be in cache at this time
             assert(0);
@@ -106,9 +114,9 @@ void Cache::insert_cache(unsigned int addr, unsigned char status) {
 
     if(!found_line) {
         // Do LRU now
-        CacheLine evict;
+        CacheLine &evict = s.cl[0];
         unsigned int low = INT_MAX;
-        for(CacheLine c : s.cl) {
+        for(CacheLine &c : s.cl) {
             if(c.lru_num < low) {
                 low = c.lru_num;
                 evict = c;
@@ -126,22 +134,19 @@ void Cache::insert_cache(unsigned int addr, unsigned char status) {
 
 }
 
-char Cache::cache_status(unsigned int addr) {
+char Cache::cache_status(unsigned long addr) {
 
-    unsigned int block_bits = 12;
-    unsigned int num_set = cache_size / associativity; // MUST be a power of 2
-    unsigned int set_bits = log2(num_set) + 1;
-    unsigned int set_mask = (num_set - 1) << block_bits;
-    unsigned int set = (addr & set_mask) >> block_bits;
-    unsigned int tag_mask = ~((1 << (set_bits + block_bits)) - 1);
-    unsigned int tag = (addr & tag_mask) >> (set_bits + block_bits);
+    unsigned long set = (addr & set_mask) >> block_bits;
+    unsigned long tag_mask = ~((1 << (set_bits + block_bits)) - 1);
+    unsigned long tag = (addr & tag_mask) >> (set_bits + block_bits);
 
-    Set s = sets[set];
+    Set &s = sets[set];
     unsigned char status = 'I';
 
-    for(CacheLine c: s.cl) {
+    for(CacheLine &c: s.cl) {
         if(c.tag == tag) {
             status = c.status;
+            break;
         }
     }
 

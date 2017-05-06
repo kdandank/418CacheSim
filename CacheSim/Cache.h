@@ -30,17 +30,24 @@ class Set
 class Cache
 {
     private:
-        unsigned int cahce_lines;
-        unsigned int cache_size; // in MB
-        unsigned int associativity;
+        static unsigned int cache_lines;
+        static unsigned int cache_size; // in MB
+        static unsigned int associativity;
+        static unsigned int block_bits;
+        static unsigned long num_set;
+        static unsigned int set_bits;
+        static unsigned long set_mask;
+
         std::vector<Set> sets;
     public:
 
         Cache(unsigned int size, unsigned int ass);
 
-        void update_cache_lru(unsigned int addr);
-        void insert_cache(unsigned int addr, unsigned char status);
-        char cache_status(unsigned int addr);
+        void update_cache_lru(unsigned long addr);
+        void insert_cache(unsigned long addr, unsigned char status);
+        char cache_status(unsigned long addr);
+
+        static void cache_init(unsigned int size, unsigned int ass);
 };
 
 #endif /* _CACHE_H_ */
