@@ -14,8 +14,10 @@ enum operations {
 class Bus {
 
 public:
-    static pthread_mutex_t lock;
-    static pthread_cond_t  cvar;
+    static pthread_mutex_t req_lock;
+    static pthread_mutex_t resp_lock;
+    static pthread_cond_t  req_cvar;
+    static pthread_cond_t  resp_cvar;
     static int resp_count;
     static int owner_id;
 
