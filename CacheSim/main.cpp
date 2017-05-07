@@ -42,15 +42,14 @@ void process_trace_file(std::string trace_filename) {
  * @param num_cores The number of cores
  * @return A vector of the cache objects
  */
-std::vector<Cache> create_cache_objects(int cache_size, int associativity,
+/*std::vector<Cache> create_cache_objects(int cache_size, int associativity,
                                             int num_cores) {
     std::vector<Cache> caches;
-    Cache::cache_init(cache_size, associativity);
     for(int i = 0; i < num_cores; i++) {
         caches.push_back(Cache(cache_size, associativity));
     }
     return caches;
-}
+}*/
 
 int main(int argc, char *argv[]) {
     int ch;
@@ -85,9 +84,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    std::vector<Cache> caches = create_cache_objects(cache_size, associativity,
-                                                        num_cores);
-    Protocol::initialize(protocol, caches, num_cores);
+    Protocol::initialize(protocol, num_cores, cache_size, associativity);
     Bus::init();
     Memory::initialize();
     process_trace_file(trace_file);

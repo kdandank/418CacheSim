@@ -29,9 +29,9 @@ Set::Set(unsigned int ass) {
     }
 }
 
-Cache::Cache(unsigned int size, unsigned int ass) {
+Cache::Cache() {
     //unsigned int line_size = cache_size / CACHE_LINE_SIZE;
-    unsigned int num_sets = size / ass;
+    unsigned int num_sets = cache_size / associativity;
 
     // #######
     assert((num_sets & (num_sets - 1)) == 0);

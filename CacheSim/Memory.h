@@ -1,3 +1,6 @@
+#ifndef _MEMORY_H_
+#define _BUS_H_
+
 #include <pthread.h>
 #include <list>
 
@@ -26,5 +29,4 @@ public:
     static void request(unsigned long addr);
 };
 
-
-
+#endif /* _MEMORY_H_ */
