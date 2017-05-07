@@ -21,6 +21,7 @@ public:
     static int owner_id;
     static unsigned long addr;
     static std::vector<bool> pending_work;
+    static bool recv_nak;
 
     static operations opt;
 

@@ -3,6 +3,7 @@
 
 #include "Cache.h"
 #include <string>
+#include <pthread.h>
 
 class SnoopingCache {
 protected:
@@ -11,6 +12,7 @@ protected:
     pthread_t resp_thread;
     pthread_mutex_t lock;
     int id;
+    unsigned long pending_addr;
 };
 
 #endif /* _SNOOPING_CACHE_H_ */
