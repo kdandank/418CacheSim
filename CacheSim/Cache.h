@@ -33,13 +33,13 @@ class Cache
         static unsigned int cache_lines;
         static unsigned int cache_size; // in MB
         static unsigned int associativity;
-        static unsigned int block_bits;
         static unsigned long num_set;
         static unsigned int set_bits;
         static unsigned long set_mask;
 
         std::vector<Set> sets;
     public:
+        static unsigned int block_bits;
 
         Cache();
 
