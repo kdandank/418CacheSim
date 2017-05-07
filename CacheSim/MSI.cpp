@@ -3,6 +3,7 @@
 #include "MSI.h"
 #include "Cache.h"
 #include "Bus.h"
+#include "Memory.h"
 #include "Protocol.h"
 #include <iostream>
 
@@ -14,6 +15,43 @@ MSI::MSI(int cache_id) {
 }
 
 void *MSI::response_worker(void *arg) {
+    MSI *obj = (MSI *) arg;
+    pthread_mutex_lock(&Bus::resp_lock);
+    while(true) {
+        while(!Bus::pending_work[obj->id]) {
+            pthread_cond_wait(&Bus::resp_cvar, &Bus::resp_lock);
+        }
+        pthread_mutex_unlock(&Bus::resp_lock);
+
+        pthread_mutex_lock(&obj->lock);
+        char status = obj->cache.cache_check_status(Bus::addr);
+        switch(status) {
+            case 'M':
+                if(Bus::opt == BusRd) {
+                    obj->cache.cache_set_status(Bus::addr, 'S');
+                } else {
+                    obj->cache.cache_set_status(Bus::addr, 'I');
+                }
+                break;
+            case 'S':
+                if(Bus::opt == BusRdX) {
+                    obj->cache.cache_set_status(Bus::addr, 'I');
+                }
+                break;
+            case 'I':
+                break;
+            default:
+                assert(0);
+        }
+        pthread_mutex_unlock(&obj->lock);
+
+        pthread_mutex_lock(&Bus::resp_lock);
+        Bus::pending_work[obj->id] = false;
+        Bus::resp_count++;
+        if(Bus::resp_count == Protocol::num_cores - 1) {
+            pthread_cond_signal(&Bus::req_cvar);
+        }
+    }
 }
 
 void *MSI::request_worker(void *arg) {
@@ -52,34 +90,42 @@ void *MSI::request_worker(void *arg) {
 }
 
 void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
+    pthread_mutex_lock(&obj->lock);
+    char status = obj->cache.cache_check_status(addr);
+    if (status == 'M') {
+        obj->cache.update_cache_lru(addr);
+        pthread_mutex_unlock(&obj->lock);
+        return;
+    }
+    pthread_mutex_unlock(&obj->lock);
+
     pthread_mutex_lock(&Bus::req_lock);
-    char status;// = obj->cache.cache_check_status(addr);
+    pthread_mutex_lock(&obj->lock);
+    status = obj->cache.cache_check_status(addr);
 
     switch(status) {
-        case 'M':
-            /* Just update lru count */
-            obj->cache.update_cache_lru(addr);
-            break;
         case 'S':
-            if(op == "R") {
-                obj->cache.update_cache_lru(addr);
-            } else {
-
+            /* Just need to update cache lru on read */
+            obj->cache.update_cache_lru(addr);
+            if(op == "W") {
+                Bus::wait_for_responses(addr, BusRdX);
+                obj->cache.cache_set_status(addr, 'M');
             }
             break;
         case 'I':
-            if(op == "I") {
+            if(op == "R") {
+                Bus::wait_for_responses(addr, BusRd);
+                Memory::request(addr);
+                obj->cache.insert_cache(addr, 'S');
             } else {
+                Bus::wait_for_responses(addr, BusRdX);
+                Memory::request(addr);
+                obj->cache.insert_cache(addr, 'M');
             }
             break;
         default:
             assert(0);
     }
+    pthread_mutex_unlock(&obj->lock);
     pthread_mutex_unlock(&Bus::req_lock);
-
-
-    if(status != 'I') {
-    } else {
-        obj->cache.insert_cache(addr, status);
-    }
 }
