@@ -15,7 +15,7 @@ int Protocol::request_id;
 std::string Protocol::request_op;
 unsigned long Protocol::request_addr;
 int Protocol::num_cores;
-std::vector<SnoopingCache> sn_caches;
+std::vector<SnoopingCache> Protocol::sn_caches;
 
 /**
  * Initialize the Protocol
