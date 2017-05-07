@@ -24,7 +24,7 @@ void Bus::init() {
     opt = BusRdX;
 
     for(int i = 0; i < Protocol::num_cores; i++) {
-        pending_work.push_back(true);
+        pending_work.push_back(false);
     }
 }
 
@@ -36,7 +36,7 @@ void Bus::wait_for_responses(unsigned long address, operations oper) {
     int count = 0;
 
     for(int i = 0; i < Protocol::num_cores; i++) {
-        pending_work[i] = false;
+        pending_work[i] = true;
     }
     pthread_cond_signal(&resp_cvar);
 
