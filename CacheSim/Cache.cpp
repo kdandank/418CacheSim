@@ -134,7 +134,7 @@ void Cache::insert_cache(unsigned long addr, unsigned char status) {
 
 }
 
-char Cache::cache_status(unsigned long addr) {
+char Cache::cache_check_status(unsigned long addr) {
 
     unsigned long set = (addr & set_mask) >> block_bits;
     unsigned long tag_mask = ~((1 << (set_bits + block_bits)) - 1);
@@ -151,4 +151,20 @@ char Cache::cache_status(unsigned long addr) {
     }
 
     return status;
+}
+
+void Cache::cache_set_status(unsigned long addr, char status) {
+
+    unsigned long set = (addr & set_mask) >> block_bits;
+    unsigned long tag_mask = ~((1 << (set_bits + block_bits)) - 1);
+    unsigned long tag = (addr & tag_mask) >> (set_bits + block_bits);
+
+    Set &s = sets[set];
+
+    for(CacheLine &c: s.cl) {
+        if(c.tag == tag) {
+            c.status = status;
+            break;
+        }
+    }
 }

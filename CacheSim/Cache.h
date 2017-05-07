@@ -45,7 +45,8 @@ class Cache
 
         void update_cache_lru(unsigned long addr);
         void insert_cache(unsigned long addr, unsigned char status);
-        char cache_status(unsigned long addr);
+        char cache_check_status(unsigned long addr);
+        void cache_set_status(unsigned long addr, char status);
 
         static void cache_init(unsigned int size, unsigned int ass);
 };
