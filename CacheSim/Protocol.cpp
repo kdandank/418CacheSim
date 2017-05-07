@@ -51,7 +51,8 @@ void Protocol::process_mem_access(int thread_id, std::string op,
     //std::cout<<"Protocol done waiting\n";
     request_id = thread_id;
     request_op = op;
-    request_addr = addr;
+    /* Reset the block bits of the address */
+    request_addr = addr & ((1 << Cache::block_bits) - 1);
     ready = true;
     pthread_cond_broadcast(&worker_cv);
     pthread_mutex_unlock(&lock);
