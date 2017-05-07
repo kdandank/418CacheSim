@@ -1,15 +1,16 @@
-#include "Protocol.h"
+#include "SnoopingCache.h"
 
 #ifndef _MSI_H_
 #define _MSI_H_
 
-class MSI : public Protocol {
+class MSI : public SnoopingCache {
 public:
-    MSI() ;
+    MSI(int cache_id);
 
+private:
     static void *request_worker(void *arg);
-
-    static void handle_request(int tid, std::string op,
+    static void *response_worker(void *arg);
+    static void handle_request(MSI *obj, std::string op,
                                     unsigned long addr);
 };
 

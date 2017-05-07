@@ -41,7 +41,7 @@ class Cache
         std::vector<Set> sets;
     public:
 
-        Cache(unsigned int size, unsigned int ass);
+        Cache();
 
         void update_cache_lru(unsigned long addr);
         void insert_cache(unsigned long addr, unsigned char status);

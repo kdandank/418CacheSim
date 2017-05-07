@@ -10,29 +10,31 @@
 pthread_mutex_t Protocol::lock;
 pthread_cond_t Protocol::trace_cv;
 pthread_cond_t Protocol::worker_cv;
-Protocol Protocol::obj;
 bool Protocol::ready;
 int Protocol::request_id;
 std::string Protocol::request_op;
 unsigned long Protocol::request_addr;
 int Protocol::num_cores;
-std::vector<Cache> Protocol::caches;
+std::vector<SnoopingCache> sn_caches;
 
 /**
  * Initialize the Protocol
  */
-void Protocol::initialize(std::string protocol,
-                                    std::vector<Cache> caches, int num_cores) {
+void Protocol::initialize(std::string protocol, int num_cores, int cache_size,
+                                int associativity) {
     Protocol::num_cores = num_cores;
-    Protocol::caches = caches;
     pthread_mutex_init(&lock, NULL);
     pthread_cond_init(&worker_cv, NULL);
     pthread_cond_init(&trace_cv, NULL);
 
-    if(protocol == "MSI") {
-        obj = MSI();
-    } else {
-        assert(0);
+    /* Set cache properties */
+    Cache::cache_init(cache_size, associativity);
+    for(int i = 0; i < num_cores; i++) {
+        if(protocol == "MSI") {
+            sn_caches.push_back(MSI(i));
+        } else {
+            assert(0);
+        }
     }
 }
 
