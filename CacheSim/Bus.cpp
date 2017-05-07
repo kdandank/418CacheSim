@@ -33,7 +33,6 @@ void Bus::wait_for_responses(unsigned long address, operations oper) {
     pthread_mutex_lock(&resp_lock);
     addr = address;
     opt = oper;
-    int count = 0;
 
     for(int i = 0; i < Protocol::num_cores; i++) {
         pending_work[i] = true;
