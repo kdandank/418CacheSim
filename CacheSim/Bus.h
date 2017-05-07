@@ -2,12 +2,11 @@
 #define _BUS_H_
 
 #include <pthread.h>
+#include <vector>
 
 enum operations {
         BusRd = 0,
-        BusRdx,
-        BusWr,
-        BusWrx,
+        BusRdX,
         BusUpd
 };
 
@@ -20,10 +19,13 @@ public:
     static pthread_cond_t  resp_cvar;
     static int resp_count;
     static int owner_id;
+    static unsigned long addr;
+    static std::vector<bool> pending_work;
 
     static operations opt;
 
     static void init();
+    static void wait_for_responses(unsigned long address, operations oper);
 };
 
 #endif /* _BUS_H_ */
