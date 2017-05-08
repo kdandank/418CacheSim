@@ -57,5 +57,6 @@ void Protocol::process_mem_access(int thread_id, std::string op,
     assert(request_addr);
     ready = true;
     pthread_cond_broadcast(&worker_cv);
+    std::cout<<"New request for " << thread_id <<"\n";
     pthread_mutex_unlock(&lock);
 }

@@ -21,6 +21,7 @@ void *MSI::response_worker(void *arg) {
         while(!Bus::pending_work[obj->id]) {
             pthread_cond_wait(&Bus::resp_cvar, &Bus::resp_lock);
         }
+        std::cout<<"Thread "<<obj->id<<" to respond\n";
         pthread_mutex_unlock(&Bus::resp_lock);
 
         pthread_mutex_lock(&obj->lock);
@@ -57,6 +58,7 @@ void *MSI::response_worker(void *arg) {
         if(Bus::resp_count == Protocol::num_cores - 1) {
             pthread_cond_signal(&Bus::req_cvar);
         }
+        std::cout<<"Thread "<<obj->id<<" done responding\n";
     }
 }
 
@@ -67,27 +69,25 @@ void *MSI::request_worker(void *arg) {
 
     pthread_mutex_lock(&Protocol::lock);
     while(true) {
-        //std::cout<<"Thread waiting\n";
         //fflush(stdout);
-        while(!Protocol::ready) {
+        while(!Protocol::ready || Protocol::request_id != obj->id) {
             pthread_cond_wait(&Protocol::worker_cv, &Protocol::lock);
         }
-        //std::cout<<"Thread done waiting\n";
         //fflush(stdout);
-        if(Protocol::request_id == obj->id) {
-            op = Protocol::request_op;
-            addr = Protocol::request_addr;
+        std::cout<<"Thread "<<obj->id<< " got request\n";
+        op = Protocol::request_op;
+        addr = Protocol::request_addr;
 
-            Protocol::ready = false;
-            pthread_cond_signal(&Protocol::trace_cv);
-            pthread_mutex_unlock(&Protocol::lock);
+        Protocol::ready = false;
+        pthread_cond_signal(&Protocol::trace_cv);
+        pthread_mutex_unlock(&Protocol::lock);
 
-            /* Lock is released before actually handling the request. This is
-             * so that mem access processor can continue processing requests
-             */
-            handle_request(obj, op, addr);
-            pthread_mutex_lock(&Protocol::lock);
-        }
+        /* Lock is released before actually handling the request. This is
+         * so that mem access processor can continue processing requests
+         */
+        handle_request(obj, op, addr);
+        std::cout<<"Thread " << obj->id<<" Done with request\n";
+        pthread_mutex_lock(&Protocol::lock);
         //std::cout<<"done handling\n";
         fflush(stdout);
     }
@@ -112,31 +112,39 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
         pthread_mutex_lock(&Bus::req_lock);
         pthread_mutex_lock(&obj->lock);
         status = obj->cache.cache_check_status(addr);
+        done = true;
 
         switch(status) {
             case 'S':
                 /* Just need to update cache lru on read */
                 obj->cache.update_cache_lru(addr);
                 if(op == "W") {
+                    std::cout<<"Before wait\n";
                     Bus::wait_for_responses(obj->id, addr, BusRdX);
-                    if(Bus::recv_nak != true) {
-                        done = true;
+                    std::cout<<"After wait\n";
+                    if(Bus::recv_nak) {
+                        done = false;
+                    } else {
                         obj->cache.cache_set_status(addr, 'M');
                     }
                 }
                 break;
             case 'I':
                 if(op == "R") {
+                    std::cout<<"Before wait\n";
                     Bus::wait_for_responses(obj->id, addr, BusRd);
-                    if(Bus::recv_nak != true) {
-                        done = true;
+                    std::cout<<"After wait\n";
+                    if(Bus::recv_nak) {
+                        done = false;
+                    } else {
                         obj->cache.insert_cache(addr, 'S');
                         obj->pending_addr = addr;
                     }
                 } else {
                     Bus::wait_for_responses(obj->id, addr, BusRdX);
-                    if(Bus::recv_nak != true) {
-                        done = true;
+                    if(Bus::recv_nak) {
+                        done = false;
+                    } else {
                         obj->cache.insert_cache(addr, 'M');
                         obj->pending_addr = addr;
                     }

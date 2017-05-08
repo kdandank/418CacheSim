@@ -39,6 +39,8 @@ void Bus::wait_for_responses(int id, unsigned long address, operations oper) {
     addr = address;
     opt = oper;
     recv_nak = false;
+    resp_count = 0;
+    owner_id = -1;
 
     for(int i = 0; i < Protocol::num_cores; i++) {
         if(id == i) {
@@ -46,7 +48,7 @@ void Bus::wait_for_responses(int id, unsigned long address, operations oper) {
         }
         pending_work[i] = true;
     }
-    pthread_cond_signal(&resp_cvar);
+    pthread_cond_broadcast(&resp_cvar);
 
     while(resp_count != Protocol::num_cores - 1) {
         pthread_cond_wait(&req_cvar, &resp_lock);
