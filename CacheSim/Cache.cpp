@@ -115,6 +115,7 @@ void Cache::insert_cache(unsigned long addr, unsigned char status) {
 
     if(!found_line) {
         // Do LRU now
+
         Protocol::mem_write_backs++;
         CacheLine &evict = s.cl[0];
         unsigned int low = INT_MAX;
@@ -132,6 +133,11 @@ void Cache::insert_cache(unsigned long addr, unsigned char status) {
         evict.tag = tag;
         evict.status = status;
         evict.lru_num = s.current_lru;
+
+        /* On eviction check if status indicates modification */
+        if(evict.status == 'M' || evict.status == 'O') {
+            Protocol::mem_write_backs++;
+        }
     }
 
 }
@@ -160,10 +166,6 @@ void Cache::cache_set_status(unsigned long addr, char status) {
     unsigned long set = (addr & set_mask) >> block_bits;
     unsigned long tag_mask = ~((1 << (set_bits + block_bits)) - 1);
     unsigned long tag = (addr & tag_mask) >> (set_bits + block_bits);
-
-    if(status == 'I') {
-        Protocol::mem_write_backs++;
-    }
 
     Set &s = sets[set];
 

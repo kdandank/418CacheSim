@@ -36,8 +36,10 @@ void *MSI::response_worker(void *arg) {
                     if(Bus::opt == BusRd) {
                         obj->cache.cache_set_status(Bus::addr, 'S');
                     } else {
+                        assert(Bus::opt == BusRdX);
                         obj->cache.cache_set_status(Bus::addr, 'I');
                     }
+                    Protocol::mem_write_backs++;
                     break;
                 case 'S':
                     if(Bus::opt == BusRdX) {
