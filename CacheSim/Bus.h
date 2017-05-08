@@ -7,7 +7,7 @@
 enum operations {
         BusRd = 0,
         BusRdX,
-        BusUpd
+        BusUpg
 };
 
 class Bus {
