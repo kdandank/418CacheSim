@@ -22,6 +22,7 @@ public:
     static unsigned long addr;
     static std::vector<bool> pending_work;
     static bool recv_nak;
+    static bool read_ex;
 
     static operations opt;
 

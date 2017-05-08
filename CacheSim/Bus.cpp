@@ -11,6 +11,7 @@ int Bus::owner_id;
 unsigned long Bus::addr;
 std::vector<bool> Bus::pending_work;
 bool Bus::recv_nak;
+bool Bus::read_ex;
 
 operations Bus::opt;
 
@@ -25,6 +26,7 @@ void Bus::init(int num_cores) {
     addr = 0;
     opt = BusRdX;
     recv_nak = false;
+    read_ex = true;
 
     pending_work = std::vector<bool>(num_cores, false);
     /*for(int i = 0; i < Protocol::num_cores; i++) {
@@ -39,6 +41,7 @@ void Bus::wait_for_responses(int id, unsigned long address, operations oper) {
     addr = address;
     opt = oper;
     recv_nak = false;
+    read_ex = true;
     resp_count = 0;
     owner_id = -1;
 
