@@ -1,6 +1,6 @@
 CXX=g++
 CPPFLAGS=-std=c++11 -g -pthread
-OBJS=Memory.o Bus.o Cache.o MSI.o MOSI.o Protocol.o main.o
+OBJS=Memory.o Bus.o Cache.o MSI.o MOSI.o MESI.o Protocol.o main.o
 # This line complies the code and creates the binary
 
 %o: %.cpp
