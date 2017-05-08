@@ -39,6 +39,7 @@ void *MSI::response_worker(void *arg) {
                         assert(Bus::opt == BusRdX);
                         obj->cache.cache_set_status(Bus::addr, 'I');
                     }
+                    /* Need to write back to memory */
                     Protocol::mem_write_backs++;
                     break;
                 case 'S':
@@ -103,7 +104,8 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
 
     pthread_mutex_lock(&obj->lock);
     char status = obj->cache.cache_check_status(addr);
-    if (status == 'M') {
+    if (status == 'M' ||
+            (status == 'S' && op == "R")) {
         obj->cache.update_cache_lru(addr);
         pthread_mutex_unlock(&obj->lock);
         return;
@@ -120,18 +122,16 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
 
         switch(status) {
             case 'S':
-                /* Just need to update cache lru on read */
+                assert(op == "W");
                 obj->cache.update_cache_lru(addr);
-                if(op == "W") {
-                    obj->opt = BusRdX;
-                    std::cout<<"Before wait\n";
-                    Bus::wait_for_responses(obj->id, addr, BusRdX);
-                    std::cout<<"After wait\n";
-                    if(Bus::recv_nak) {
-                        done = false;
-                    } else {
-                        obj->cache.cache_set_status(addr, 'M');
-                    }
+                obj->opt = BusRdX;
+                std::cout<<"Before wait\n";
+                Bus::wait_for_responses(obj->id, addr, BusRdX);
+                std::cout<<"After wait\n";
+                if(Bus::recv_nak) {
+                    done = false;
+                } else {
+                    obj->cache.cache_set_status(addr, 'M');
                 }
                 break;
             case 'I':
