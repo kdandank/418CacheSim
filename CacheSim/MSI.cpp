@@ -26,7 +26,7 @@ void *MSI::response_worker(void *arg) {
 
         pthread_mutex_lock(&obj->lock);
 
-        if(obj->pending_addr == Bus::addr) {
+        if(obj->pending_addr == Bus::addr && (obj->opt != BusRd || Bus::opt != BusRd)) {
             assert(obj->pending_addr);
             Bus::recv_nak = true;
         } else {
@@ -114,11 +114,14 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
         status = obj->cache.cache_check_status(addr);
         done = true;
 
+        Protocol::bus_transactions++;
+
         switch(status) {
             case 'S':
                 /* Just need to update cache lru on read */
                 obj->cache.update_cache_lru(addr);
                 if(op == "W") {
+                    obj->opt = BusRdX;
                     std::cout<<"Before wait\n";
                     Bus::wait_for_responses(obj->id, addr, BusRdX);
                     std::cout<<"After wait\n";
@@ -131,6 +134,7 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
                 break;
             case 'I':
                 if(op == "R") {
+                    obj->opt = BusRd;
                     std::cout<<"Before wait\n";
                     Bus::wait_for_responses(obj->id, addr, BusRd);
                     std::cout<<"After wait\n";
@@ -141,6 +145,7 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
                         obj->pending_addr = addr;
                     }
                 } else {
+                    obj->opt = BusRdX;
                     Bus::wait_for_responses(obj->id, addr, BusRdX);
                     if(Bus::recv_nak) {
                         done = false;

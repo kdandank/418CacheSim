@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <limits.h>
 #include "Cache.h"
+#include "Protocol.h"
 
 #define CACHE_LINE_SIZE 4096
 
@@ -114,6 +115,7 @@ void Cache::insert_cache(unsigned long addr, unsigned char status) {
 
     if(!found_line) {
         // Do LRU now
+        Protocol::mem_write_backs++;
         CacheLine &evict = s.cl[0];
         unsigned int low = INT_MAX;
         for(CacheLine &c : s.cl) {
@@ -158,6 +160,10 @@ void Cache::cache_set_status(unsigned long addr, char status) {
     unsigned long set = (addr & set_mask) >> block_bits;
     unsigned long tag_mask = ~((1 << (set_bits + block_bits)) - 1);
     unsigned long tag = (addr & tag_mask) >> (set_bits + block_bits);
+
+    if(status == 'I') {
+        Protocol::mem_write_backs++;
+    }
 
     Set &s = sets[set];
 

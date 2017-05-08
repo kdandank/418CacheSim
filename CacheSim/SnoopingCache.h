@@ -4,6 +4,7 @@
 #include "Cache.h"
 #include <string>
 #include <pthread.h>
+#include "Bus.h"
 
 class SnoopingCache {
 protected:
@@ -13,6 +14,7 @@ protected:
     pthread_mutex_t lock;
     int id;
     unsigned long pending_addr;
+    operations opt;
 };
 
 #endif /* _SNOOPING_CACHE_H_ */

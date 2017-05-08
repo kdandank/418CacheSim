@@ -2,6 +2,7 @@
 #include <vector>
 #include "Cache.h"
 #include "SnoopingCache.h"
+#include <atomic>
 
 #ifndef _PROTOCOL_H_
 #define _PROTOCOL_H_
@@ -16,6 +17,10 @@ public:
     static std::string request_op;
     static unsigned long request_addr;
     static int num_cores;
+    static std::atomic <long> bus_transactions;
+    static std::atomic <long> mem_reqs;
+    static std::atomic <long> mem_write_backs;
+    static std::atomic <long> cache_transfers;
 
 private:
     static std::vector<SnoopingCache *> sn_caches;

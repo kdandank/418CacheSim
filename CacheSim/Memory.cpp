@@ -1,10 +1,21 @@
 #include <iostream>
 #include "Memory.h"
+#include "Protocol.h"
+#include <unistd.h>
 
 pthread_mutex_t Memory::lock;
 std::list<MemRequest *> Memory::req_table;
 pthread_cond_t Memory::threads_cv;
 pthread_cond_t Memory::req_cv;
+
+//#pragma optimize( "", off )
+void dummy_instructions() {
+
+    //int x = 100000;
+    //while(x-- != 0);
+    usleep(50000); // 50 ms
+}
+//#pragma optimize( "", on )
 
 MemRequest::MemRequest(unsigned long a) {
     addr = a;
@@ -32,10 +43,11 @@ void *Memory::memory_worker(void *arg) {
             pthread_cond_wait(&req_cv, &lock);
             //std::cout<<"waking up\n";
         }
+        Protocol::mem_reqs++;
         //std::cout<<"got a new request\n";
         pthread_mutex_unlock(&lock);
         // wait logic - add latency
-        //
+        dummy_instructions();
         //
         pthread_mutex_lock(&lock);
         MemRequest *req = req_table.front();

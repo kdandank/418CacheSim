@@ -49,6 +49,14 @@ void process_trace_file(std::string trace_filename) {
     return caches;
 }*/
 
+void print_mem_metrics(){
+
+    std::cout << "\nBus Transactions = " << Protocol::bus_transactions;
+    std::cout << "\nMemory Requests = " << Protocol::mem_reqs;
+    std::cout << "\nMemory Write Backs = " << Protocol::mem_write_backs;
+    std::cout << "\nCache Transfers = " << Protocol::cache_transfers;
+}
+
 int main(int argc, char *argv[]) {
     int ch;
     int num_cores = 1;
@@ -86,4 +94,6 @@ int main(int argc, char *argv[]) {
     Memory::initialize();
     Protocol::initialize(protocol, num_cores, cache_size, associativity);
     process_trace_file(trace_file);
+
+    print_mem_metrics();
 }

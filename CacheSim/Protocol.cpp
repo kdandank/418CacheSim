@@ -16,6 +16,10 @@ std::string Protocol::request_op;
 unsigned long Protocol::request_addr;
 int Protocol::num_cores;
 std::vector<SnoopingCache *> Protocol::sn_caches;
+std::atomic<long> Protocol::bus_transactions;
+std::atomic<long> Protocol::mem_reqs;
+std::atomic<long> Protocol::mem_write_backs;
+std::atomic<long> Protocol::cache_transfers;
 
 /**
  * Initialize the Protocol
