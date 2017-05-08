@@ -65,8 +65,8 @@ void *MSI::request_worker(void *arg) {
     std::string op;
     unsigned long addr;
 
+    pthread_mutex_lock(&Protocol::lock);
     while(true) {
-        pthread_mutex_lock(&Protocol::lock);
         //std::cout<<"Thread waiting\n";
         //fflush(stdout);
         while(!Protocol::ready) {
@@ -86,17 +86,17 @@ void *MSI::request_worker(void *arg) {
              * so that mem access processor can continue processing requests
              */
             handle_request(obj, op, addr);
-        } else {
-            pthread_mutex_unlock(&Protocol::lock);
+            pthread_mutex_lock(&Protocol::lock);
         }
         //std::cout<<"done handling\n";
-        //fflush(stdout);
+        fflush(stdout);
     }
+    pthread_mutex_unlock(&Protocol::lock);
     return NULL;
 }
 
 void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
-
+    assert(addr);
     bool done = false;
 
     pthread_mutex_lock(&obj->lock);
@@ -118,7 +118,7 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
                 /* Just need to update cache lru on read */
                 obj->cache.update_cache_lru(addr);
                 if(op == "W") {
-                    Bus::wait_for_responses(addr, BusRdX);
+                    Bus::wait_for_responses(obj->id, addr, BusRdX);
                     if(Bus::recv_nak != true) {
                         done = true;
                         obj->cache.cache_set_status(addr, 'M');
@@ -127,14 +127,14 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
                 break;
             case 'I':
                 if(op == "R") {
-                    Bus::wait_for_responses(addr, BusRd);
+                    Bus::wait_for_responses(obj->id, addr, BusRd);
                     if(Bus::recv_nak != true) {
                         done = true;
                         obj->cache.insert_cache(addr, 'S');
                         obj->pending_addr = addr;
                     }
                 } else {
-                    Bus::wait_for_responses(addr, BusRdX);
+                    Bus::wait_for_responses(obj->id, addr, BusRdX);
                     if(Bus::recv_nak != true) {
                         done = true;
                         obj->cache.insert_cache(addr, 'M');
@@ -153,6 +153,7 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
             pthread_mutex_lock(&obj->lock);
             obj->pending_addr = 0;
             pthread_mutex_unlock(&obj->lock);
+            //std::cout<<"Done with memory request\n";
         }
     }
 }

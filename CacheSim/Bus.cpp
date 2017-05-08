@@ -1,5 +1,6 @@
 #include "Bus.h"
 #include "Protocol.h"
+#include <iostream>
 
 pthread_mutex_t Bus::req_lock;
 pthread_mutex_t Bus::resp_lock;
@@ -13,7 +14,7 @@ bool Bus::recv_nak;
 
 operations Bus::opt;
 
-void Bus::init() {
+void Bus::init(int num_cores) {
 
     pthread_mutex_init(&req_lock, NULL);
     pthread_mutex_init(&resp_lock, NULL);
@@ -25,12 +26,14 @@ void Bus::init() {
     opt = BusRdX;
     recv_nak = false;
 
-    for(int i = 0; i < Protocol::num_cores; i++) {
+    pending_work = std::vector<bool>(num_cores, false);
+    /*for(int i = 0; i < Protocol::num_cores; i++) {
         pending_work.push_back(false);
     }
+    std::cout<<pending_work[0];*/
 }
 
-void Bus::wait_for_responses(unsigned long address, operations oper) {
+void Bus::wait_for_responses(int id, unsigned long address, operations oper) {
 
     pthread_mutex_lock(&resp_lock);
     addr = address;
@@ -38,6 +41,9 @@ void Bus::wait_for_responses(unsigned long address, operations oper) {
     recv_nak = false;
 
     for(int i = 0; i < Protocol::num_cores; i++) {
+        if(id == i) {
+            continue;
+        }
         pending_work[i] = true;
     }
     pthread_cond_signal(&resp_cvar);

@@ -18,7 +18,7 @@ public:
 class Memory {
 private:
     static pthread_mutex_t lock;
-    static std::list<MemRequest> req_table;
+    static std::list<MemRequest *> req_table;
     static pthread_cond_t threads_cv;
     static pthread_cond_t req_cv;
 

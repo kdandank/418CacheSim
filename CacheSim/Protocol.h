@@ -18,7 +18,7 @@ public:
     static int num_cores;
 
 private:
-    static std::vector<SnoopingCache> sn_caches;
+    static std::vector<SnoopingCache *> sn_caches;
 
 public:
     /**

@@ -29,8 +29,6 @@ void process_trace_file(std::string trace_filename) {
     unsigned long addr;
 
     while(tracefile >> thread_id) {
-        //std::cout<<"new access\n";
-        //fflush(stdout);
         tracefile >> op;
         tracefile >> std::hex >> addr;
         Protocol::process_mem_access(thread_id, op, addr);
@@ -84,8 +82,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    Protocol::initialize(protocol, num_cores, cache_size, associativity);
-    Bus::init();
+    Bus::init(num_cores);
     Memory::initialize();
+    Protocol::initialize(protocol, num_cores, cache_size, associativity);
     process_trace_file(trace_file);
 }

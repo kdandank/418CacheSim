@@ -1,5 +1,5 @@
 CXX=g++
-CPPFLAGS=-std=c++11 -pthread
+CPPFLAGS=-std=c++11 -g -pthread
 OBJS=Memory.o Bus.o Cache.o MSI.o Protocol.o main.o
 # This line complies the code and creates the binary
 

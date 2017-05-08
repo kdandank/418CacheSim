@@ -25,8 +25,9 @@ public:
 
     static operations opt;
 
-    static void init();
-    static void wait_for_responses(unsigned long address, operations oper);
+    static void init(int num_cores);
+    static void wait_for_responses(int id, unsigned long address,
+                                        operations oper);
 };
 
 #endif /* _BUS_H_ */
