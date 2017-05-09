@@ -34,6 +34,7 @@ void *MESI::response_worker(void *arg) {
             switch(status) {
                 case Modified:
                     if(Bus::opt == BusRd) {
+                        Bus::read_ex = false;
                         obj->cache.cache_set_status(Bus::addr, Shared);
                     } else {
                         obj->cache.cache_set_status(Bus::addr, Invalid);
@@ -45,6 +46,9 @@ void *MESI::response_worker(void *arg) {
                     Bus::owner_id = obj->id;
                     break;
                 case Shared:
+                    /* If someone needs to go in exclusive state, then it was
+                     * a BusRd.. For other state, read_ex won't matter
+                     */
                     Bus::read_ex = false;
                     if(Bus::opt == BusRdX) {
                         obj->cache.cache_set_status(Bus::addr, Invalid);

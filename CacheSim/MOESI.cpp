@@ -35,6 +35,8 @@ void *MOESI::response_worker(void *arg) {
             switch(status) {
                 case Modified:
                     if(Bus::opt == BusRd) {
+                        Bus::read_ex = false;
+                        std::cout<<"Thread "<<obj->id<<" in owner state\n";
                         obj->cache.cache_set_status(Bus::addr, Owner);
                     } else {
                         /* No memory writeback */
@@ -60,6 +62,7 @@ void *MOESI::response_worker(void *arg) {
                 case Exclusive:
                     Bus::read_ex = false;
                     if(Bus::opt == BusRd) {
+                        std::cout<<"Thread "<<obj->id<<" in sh state\n";
                         obj->cache.cache_set_status(Bus::addr, Shared);
 
                     } else {
@@ -71,11 +74,14 @@ void *MOESI::response_worker(void *arg) {
                     }
                     break;
                 case Owner:
+                    Bus::read_ex = false;
                     if(Bus::opt == BusRd || Bus::opt == BusRdX) {
                         Bus::owner_id = obj->id;
                     }
                     if(Bus::opt == BusRdX || Bus::opt == BusUpg) {
                         obj->cache.cache_set_status(Bus::addr, Invalid);
+                    } else {
+                        Bus::owner_id = obj->id;
                     }
                     break;
                 default:
@@ -106,7 +112,7 @@ void *MOESI::request_worker(void *arg) {
             pthread_cond_wait(&Protocol::worker_cv, &Protocol::lock);
         }
         //fflush(stdout);
-        std::cout<<"Thread "<<obj->id<< " got request\n";
+        std::cout<<"Thread "<<obj->id<< " got request "<< op <<" " << Protocol::request_addr<<"\n";
         op = Protocol::request_op;
         addr = Protocol::request_addr;
 
@@ -182,8 +188,10 @@ void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
                         done = false;
                     } else {
                         if(Bus::read_ex == true) {
+                            std::cout<<"Thread "<<obj->id<<" in excl state\n";
                             obj->cache.insert_cache(addr, Exclusive);
                         } else {
+                            std::cout<<"Thread "<<obj->id<<" in sh state\n";
                             obj->cache.insert_cache(addr, Shared);
                         }
                         obj->pending_addr = addr;
