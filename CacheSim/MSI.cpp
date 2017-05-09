@@ -102,6 +102,7 @@ void *MSI::request_worker(void *arg) {
         pthread_mutex_lock(&Protocol::lock);
         //std::cout<<"done handling\n";
         fflush(stdout);
+        Protocol::trace_count++;
     }
     pthread_mutex_unlock(&Protocol::lock);
     return NULL;

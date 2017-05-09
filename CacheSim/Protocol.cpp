@@ -24,6 +24,7 @@ std::atomic<long> Protocol::bus_transactions;
 std::atomic<long> Protocol::mem_reqs;
 std::atomic<long> Protocol::mem_write_backs;
 std::atomic<long> Protocol::cache_transfers;
+std::atomic<long> Protocol::trace_count;
 
 /**
  * Initialize the Protocol
