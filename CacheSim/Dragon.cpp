@@ -174,7 +174,6 @@ void Dragon::handle_request(Dragon *obj, std::string op, unsigned long addr) {
                 } else {
                     obj->cache.insert_cache(addr, ShClean);
                 }
-                obj->pending_addr = addr;
 
                 if(Bus::owner_id != -1) {
                     Protocol::cache_transfers++;

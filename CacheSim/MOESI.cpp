@@ -21,7 +21,7 @@ void *MOESI::response_worker(void *arg) {
         while(!Bus::pending_work[obj->id]) {
             pthread_cond_wait(&Bus::resp_cvar, &Bus::resp_lock);
         }
-        std::cout<<"Thread "<<obj->id<<" to respond\n";
+        //std::cout<<"Thread "<<obj->id<<" to respond\n";
         pthread_mutex_unlock(&Bus::resp_lock);
 
         pthread_mutex_lock(&obj->lock);
@@ -90,7 +90,7 @@ void *MOESI::response_worker(void *arg) {
         if(Bus::resp_count == Protocol::num_cores - 1) {
             pthread_cond_signal(&Bus::req_cvar);
         }
-        std::cout<<"Thread "<<obj->id<<" done responding\n";
+        //std::cout<<"Thread "<<obj->id<<" done responding\n";
     }
 }
 
@@ -162,9 +162,9 @@ void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
                 assert(op == "W");
                 obj->cache.update_cache_lru(addr);
                 obj->opt = BusUpg;
-                std::cout<<"Before wait\n";
+                //std::cout<<"Before wait\n";
                 Bus::wait_for_responses(obj->id, addr, BusUpg);
-                std::cout<<"After wait\n";
+                //std::cout<<"After wait\n";
                 if(Bus::recv_nak) {
                     done = false;
                 } else {
@@ -175,9 +175,9 @@ void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
             case Invalid:
                 if(op == "R") {
                     obj->opt = BusRd;
-                    std::cout<<"Before wait\n";
+                    //std::cout<<"Before wait\n";
                     Bus::wait_for_responses(obj->id, addr, BusRd);
-                    std::cout<<"After wait\n";
+                    //std::cout<<"After wait\n";
                     if(Bus::recv_nak) {
                         done = false;
                     } else {
@@ -206,6 +206,7 @@ void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
         /* Cache transfer will only matter if it was in Invalid state */
         if(Bus::owner_id != -1) {
             cache_transfer = true;
+            obj->pending_addr = 0;
         }
         pthread_mutex_unlock(&obj->lock);
         pthread_mutex_unlock(&Bus::req_lock);

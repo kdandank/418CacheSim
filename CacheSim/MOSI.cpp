@@ -183,6 +183,7 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
         }
         /* Cache transfer will only matter if it was in Invalid state */
         if(Bus::owner_id != -1) {
+            obj->pending_addr = 0;
             cache_transfer = true;
         }
         pthread_mutex_unlock(&obj->lock);
