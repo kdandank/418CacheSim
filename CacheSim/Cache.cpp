@@ -135,7 +135,8 @@ void Cache::insert_cache(unsigned long addr, cache_state status) {
         evict.lru_num = s.current_lru;
 
         /* On eviction check if status indicates modification */
-        if(evict.status == Modified || evict.status == Owner) {
+        if(evict.status == Modified || evict.status == Owner ||
+           evict.status == ShModified) {
             Protocol::mem_write_backs++;
         }
     }

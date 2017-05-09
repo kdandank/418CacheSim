@@ -4,6 +4,10 @@
 #include <assert.h>
 #include "Protocol.h"
 #include "MSI.h"
+#include "MESI.h"
+#include "MOSI.h"
+#include "MOESI.h"
+#include "Dragon.h"
 #include "Cache.h"
 
 
@@ -36,6 +40,14 @@ void Protocol::initialize(std::string protocol, int num_cores, int cache_size,
     for(int i = 0; i < num_cores; i++) {
         if(protocol == "MSI") {
             sn_caches.push_back(new MSI(i));
+        } else if(protocol == "MESI") {
+            sn_caches.push_back(new MESI(i));
+        } else if(protocol == "MOSI") {
+            sn_caches.push_back(new MOSI(i));
+        } else if(protocol == "MOESI") {
+            sn_caches.push_back(new MOESI(i));
+        } else if(protocol == "Dragon") {
+            sn_caches.push_back(new Dragon(i));
         } else {
             assert(0);
         }
