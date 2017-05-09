@@ -15,7 +15,7 @@ unsigned long Cache::num_set;
 unsigned int Cache::set_bits;
 unsigned long Cache::set_mask;
 
-CacheLine::CacheLine(unsigned int t, unsigned char s) {
+CacheLine::CacheLine(unsigned int t, cache_state s) {
     tag = t;
     status = s;
     lru_num = 0;
@@ -25,7 +25,7 @@ Set::Set(unsigned int ass) {
     current_lru = 0;
     for(int i = 0; i < ass; i++) {
         unsigned int t = 0;
-        unsigned char s = 'I';
+        cache_state s = Invalid;
         cl.push_back(CacheLine(t, s));
     }
 }
@@ -82,7 +82,7 @@ void Cache::update_cache_lru(unsigned long addr) {
     }
 }
 
-void Cache::insert_cache(unsigned long addr, unsigned char status) {
+void Cache::insert_cache(unsigned long addr, cache_state status) {
 
     unsigned long set = (addr & set_mask) >> block_bits;
     unsigned long tag_mask = ~((1 << (set_bits + block_bits)) - 1);
@@ -93,7 +93,7 @@ void Cache::insert_cache(unsigned long addr, unsigned char status) {
 
     // First try to find an 'Invalid' line
     for(CacheLine &c : s.cl) {
-        if(c.status == 'I') {
+        if(c.status == Invalid) {
             // This line can be evicted
             found_line = true;
 
@@ -135,21 +135,21 @@ void Cache::insert_cache(unsigned long addr, unsigned char status) {
         evict.lru_num = s.current_lru;
 
         /* On eviction check if status indicates modification */
-        if(evict.status == 'M' || evict.status == 'O') {
+        if(evict.status == Modified || evict.status == Owner) {
             Protocol::mem_write_backs++;
         }
     }
 
 }
 
-char Cache::cache_check_status(unsigned long addr) {
+cache_state Cache::cache_check_status(unsigned long addr) {
 
     unsigned long set = (addr & set_mask) >> block_bits;
     unsigned long tag_mask = ~((1 << (set_bits + block_bits)) - 1);
     unsigned long tag = (addr & tag_mask) >> (set_bits + block_bits);
 
     Set &s = sets[set];
-    unsigned char status = 'I';
+    cache_state status = Invalid;
 
     for(CacheLine &c: s.cl) {
         if(c.tag == tag) {
@@ -161,7 +161,7 @@ char Cache::cache_check_status(unsigned long addr) {
     return status;
 }
 
-void Cache::cache_set_status(unsigned long addr, char status) {
+void Cache::cache_set_status(unsigned long addr, cache_state status) {
 
     unsigned long set = (addr & set_mask) >> block_bits;
     unsigned long tag_mask = ~((1 << (set_bits + block_bits)) - 1);

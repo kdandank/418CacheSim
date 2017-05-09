@@ -30,43 +30,43 @@ void *MOESI::response_worker(void *arg) {
             assert(obj->pending_addr);
             Bus::recv_nak = true;
         } else {
-            char status = obj->cache.cache_check_status(Bus::addr);
+            cache_state status = obj->cache.cache_check_status(Bus::addr);
             switch(status) {
-                case 'M':
+                case Modified:
                     if(Bus::opt == BusRd) {
-                        obj->cache.cache_set_status(Bus::addr, 'O');
+                        obj->cache.cache_set_status(Bus::addr, Owner);
                     } else {
                         /* No memory writeback */
                         assert(Bus::opt == BusRdX);
-                        obj->cache.cache_set_status(Bus::addr, 'I');
+                        obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
                     Bus::owner_id = obj->id;
                     break;
-                case 'S':
+                case Shared:
                     Bus::read_ex = false;
                     if(Bus::opt == BusRdX || Bus::opt == BusUpg) {
-                        obj->cache.cache_set_status(Bus::addr, 'I');
+                        obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
                     break;
-                case 'I':
+                case Invalid:
                     break;
-                case 'E':
+                case Exclusive:
                     Bus::read_ex = false;
                     if(Bus::opt == BusRd) {
-                        obj->cache.cache_set_status(Bus::addr, 'S');
+                        obj->cache.cache_set_status(Bus::addr, Shared);
 
                     } else {
                         assert(Bus::opt == BusRdX);
-                        obj->cache.cache_set_status(Bus::addr, 'I');
+                        obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
                     Bus::owner_id = obj->id;
                     break;
-                case 'O':
+                case Owner:
                     if(Bus::opt == BusRd || Bus::opt == BusRdX) {
                         Bus::owner_id = obj->id;
                     }
                     if(Bus::opt == BusRdX || Bus::opt == BusUpg) {
-                        obj->cache.cache_set_status(Bus::addr, 'I');
+                        obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
                     break;
                 default:
@@ -124,15 +124,15 @@ void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
     bool cache_transfer = false;
 
     pthread_mutex_lock(&obj->lock);
-    char status = obj->cache.cache_check_status(addr);
-    if ((status == 'E' && op == "R") || status == 'M' ||
-            (status == 'S' && op == "R") ||
-            (status == 'O' && op == "R")) {
+    cache_state status = obj->cache.cache_check_status(addr);
+    if ((status == Exclusive && op == "R") || status == Modified ||
+            (status == Shared && op == "R") ||
+            (status == Owner && op == "R")) {
         obj->cache.update_cache_lru(addr);
         pthread_mutex_unlock(&obj->lock);
         return;
-    } else if(status == 'E' && op == "W") {
-        obj->cache.cache_set_status(addr, 'M');
+    } else if(status == Exclusive && op == "W") {
+        obj->cache.cache_set_status(addr, Modified);
         obj->cache.update_cache_lru(addr);
         pthread_mutex_unlock(&obj->lock);
         return;
@@ -148,8 +148,8 @@ void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
         Protocol::bus_transactions++;
 
         switch(status) {
-            case 'S':
-            case 'O':
+            case Shared:
+            case Owner:
                 assert(op == "W");
                 obj->cache.update_cache_lru(addr);
                 obj->opt = BusUpg;
@@ -159,11 +159,11 @@ void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
                 if(Bus::recv_nak) {
                     done = false;
                 } else {
-                    obj->cache.cache_set_status(addr, 'M');
+                    obj->cache.cache_set_status(addr, Modified);
                 }
                 break;
 
-            case 'I':
+            case Invalid:
                 if(op == "R") {
                     obj->opt = BusRd;
                     std::cout<<"Before wait\n";
@@ -173,9 +173,9 @@ void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
                         done = false;
                     } else {
                         if(Bus::read_ex == true) {
-                            obj->cache.insert_cache(addr, 'E');
+                            obj->cache.insert_cache(addr, Exclusive);
                         } else {
-                            obj->cache.insert_cache(addr, 'S');
+                            obj->cache.insert_cache(addr, Shared);
                         }
                         obj->pending_addr = addr;
                     }
@@ -185,23 +185,23 @@ void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
                     if(Bus::recv_nak) {
                         done = false;
                     } else {
-                        obj->cache.insert_cache(addr, 'M');
+                        obj->cache.insert_cache(addr, Modified);
                         obj->pending_addr = addr;
                     }
                 }
                 break;
-            case 'E':
+            case Exclusive:
             default:
                 assert(0);
         }
-        /* Cache transfer will only matter if it was in 'I' state */
+        /* Cache transfer will only matter if it was in Invalid state */
         if(Bus::owner_id != -1) {
             cache_transfer = true;
         }
         pthread_mutex_unlock(&obj->lock);
         pthread_mutex_unlock(&Bus::req_lock);
 
-        if(status == 'I' && done) {
+        if(status == Invalid && done) {
             if(cache_transfer) {
                 Protocol::cache_transfers++;
             } else {

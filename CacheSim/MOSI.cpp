@@ -32,31 +32,31 @@ void *MOSI::response_worker(void *arg) {
             assert(obj->pending_addr);
             Bus::recv_nak = true;
         } else {
-            char status = obj->cache.cache_check_status(Bus::addr);
+            cache_state status = obj->cache.cache_check_status(Bus::addr);
             switch(status) {
-                case 'M':
+                case Modified:
                     if(Bus::opt == BusRd) {
-                        obj->cache.cache_set_status(Bus::addr, 'O');
+                        obj->cache.cache_set_status(Bus::addr, Owner);
                     } else {
                         /* No memory writeback */
                         assert(Bus::opt == BusRdX);
-                        obj->cache.cache_set_status(Bus::addr, 'I');
+                        obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
                     Bus::owner_id = obj->id;
                     break;
-                case 'O':
+                case Owner:
                     if(Bus::opt == BusRd || Bus::opt == BusRdX) {
                         Bus::owner_id = obj->id;
                     }
                     if(Bus::opt == BusRdX || Bus::opt == BusUpg) {
-                        obj->cache.cache_set_status(Bus::addr, 'I');
+                        obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
-                case 'S':
+                case Shared:
                     if(Bus::opt == BusRdX || Bus::opt == BusUpg) {
-                        obj->cache.cache_set_status(Bus::addr, 'I');
+                        obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
                     break;
-                case 'I':
+                case Invalid:
                     break;
                 default:
                     assert(0);
@@ -114,10 +114,10 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
     bool cache_transfer = false;
 
     pthread_mutex_lock(&obj->lock);
-    char status = obj->cache.cache_check_status(addr);
-    if (status == 'M' ||
-            (status == 'S' && op == "R") ||
-            (status == 'O' && op == "R")) {
+    cache_state status = obj->cache.cache_check_status(addr);
+    if (status == Modified ||
+            (status == Shared && op == "R") ||
+            (status == Owner && op == "R")) {
         obj->cache.update_cache_lru(addr);
         pthread_mutex_unlock(&obj->lock);
         return;
@@ -133,8 +133,8 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
         Protocol::bus_transactions++;
 
         switch(status) {
-            case 'S':
-            case 'O':
+            case Shared:
+            case Owner:
                 assert(op == "W");
                 obj->cache.update_cache_lru(addr);
                 obj->opt = BusUpg;
@@ -144,11 +144,11 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
                 if(Bus::recv_nak) {
                     done = false;
                 } else {
-                    obj->cache.cache_set_status(addr, 'M');
+                    obj->cache.cache_set_status(addr, Modified);
                 }
                 break;
 
-            case 'I':
+            case Invalid:
                 std::cout<<"Cache miss\n";
                 if(op == "R") {
                     obj->opt = BusRd;
@@ -158,7 +158,7 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
                     if(Bus::recv_nak) {
                         done = false;
                     } else {
-                        obj->cache.insert_cache(addr, 'S');
+                        obj->cache.insert_cache(addr, Shared);
                         obj->pending_addr = addr;
                     }
                 } else {
@@ -167,7 +167,7 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
                     if(Bus::recv_nak) {
                         done = false;
                     } else {
-                        obj->cache.insert_cache(addr, 'M');
+                        obj->cache.insert_cache(addr, Modified);
                         obj->pending_addr = addr;
                     }
                 }
@@ -175,7 +175,7 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
             default:
                 assert(0);
         }
-        /* Cache transfer will only matter if it was in 'I' state */
+        /* Cache transfer will only matter if it was in Invalid state */
         if(Bus::owner_id != -1) {
             cache_transfer = true;
         }
@@ -183,7 +183,7 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
         pthread_mutex_unlock(&Bus::req_lock);
 
 
-        if(status == 'I' && done) {
+        if(status == Invalid && done) {
             if(cache_transfer) {
                 Protocol::cache_transfers++;
             } else {

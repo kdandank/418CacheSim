@@ -7,14 +7,24 @@
 
 #define CACHE_LINE_SIZE 4096
 
+enum cache_state {
+    Modified = 0,
+    Shared,
+    Invalid,
+    Exclusive,
+    Owner,
+    ShModified,
+    ShClean
+};
+
 class CacheLine
 {
     public:
         unsigned int tag;
-        unsigned char status;
+        cache_state status;
         unsigned int lru_num;
         CacheLine();
-        CacheLine(unsigned int t, unsigned char s);
+        CacheLine(unsigned int t, cache_state s);
 };
 
 class Set
@@ -44,9 +54,9 @@ class Cache
         Cache();
 
         void update_cache_lru(unsigned long addr);
-        void insert_cache(unsigned long addr, unsigned char status);
-        char cache_check_status(unsigned long addr);
-        void cache_set_status(unsigned long addr, char status);
+        void insert_cache(unsigned long addr, cache_state status);
+        cache_state cache_check_status(unsigned long addr);
+        void cache_set_status(unsigned long addr, cache_state status);
 
         static void cache_init(unsigned int size, unsigned int ass);
 };

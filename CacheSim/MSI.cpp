@@ -30,24 +30,24 @@ void *MSI::response_worker(void *arg) {
             assert(obj->pending_addr);
             Bus::recv_nak = true;
         } else {
-            char status = obj->cache.cache_check_status(Bus::addr);
+            cache_state status = obj->cache.cache_check_status(Bus::addr);
             switch(status) {
-                case 'M':
+                case Modified:
                     if(Bus::opt == BusRd) {
-                        obj->cache.cache_set_status(Bus::addr, 'S');
+                        obj->cache.cache_set_status(Bus::addr, Shared);
                     } else {
                         assert(Bus::opt == BusRdX);
-                        obj->cache.cache_set_status(Bus::addr, 'I');
+                        obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
                     /* Need to write back to memory */
                     Protocol::mem_write_backs++;
                     break;
-                case 'S':
+                case Shared:
                     if(Bus::opt == BusRdX) {
-                        obj->cache.cache_set_status(Bus::addr, 'I');
+                        obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
                     break;
-                case 'I':
+                case Invalid:
                     break;
                 default:
                     assert(0);
@@ -103,9 +103,9 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
     bool done = false;
 
     pthread_mutex_lock(&obj->lock);
-    char status = obj->cache.cache_check_status(addr);
-    if (status == 'M' ||
-            (status == 'S' && op == "R")) {
+    cache_state status = obj->cache.cache_check_status(addr);
+    if (status == Modified ||
+            (status == Shared && op == "R")) {
         obj->cache.update_cache_lru(addr);
         pthread_mutex_unlock(&obj->lock);
         return;
@@ -121,7 +121,7 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
         Protocol::bus_transactions++;
 
         switch(status) {
-            case 'S':
+            case Shared:
                 assert(op == "W");
                 obj->cache.update_cache_lru(addr);
                 obj->opt = BusRdX;
@@ -131,10 +131,10 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
                 if(Bus::recv_nak) {
                     done = false;
                 } else {
-                    obj->cache.cache_set_status(addr, 'M');
+                    obj->cache.cache_set_status(addr, Modified);
                 }
                 break;
-            case 'I':
+            case Invalid:
                 if(op == "R") {
                     obj->opt = BusRd;
                     std::cout<<"Before wait\n";
@@ -143,7 +143,7 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
                     if(Bus::recv_nak) {
                         done = false;
                     } else {
-                        obj->cache.insert_cache(addr, 'S');
+                        obj->cache.insert_cache(addr, Shared);
                         obj->pending_addr = addr;
                     }
                 } else {
@@ -152,7 +152,7 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
                     if(Bus::recv_nak) {
                         done = false;
                     } else {
-                        obj->cache.insert_cache(addr, 'M');
+                        obj->cache.insert_cache(addr, Modified);
                         obj->pending_addr = addr;
                     }
                 }
@@ -163,7 +163,7 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
         pthread_mutex_unlock(&obj->lock);
         pthread_mutex_unlock(&Bus::req_lock);
 
-        if(status == 'I' && done) {
+        if(status == Invalid && done) {
             Memory::request(addr);
             pthread_mutex_lock(&obj->lock);
             obj->pending_addr = 0;
