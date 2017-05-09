@@ -1,21 +1,21 @@
 #include <assert.h>
 #include <pthread.h>
-#include "MOSI.h"
+#include "MOESI.h"
 #include "Cache.h"
 #include "Bus.h"
 #include "Memory.h"
 #include "Protocol.h"
 #include <iostream>
 
-MOSI::MOSI(int cache_id) {
+MOESI::MOESI(int cache_id) {
     id = cache_id;
     pthread_t tid;
     pthread_create(&tid, NULL, request_worker, (void *) this);
     pthread_create(&tid, NULL, response_worker, (void *) this);
 }
 
-void *MOSI::response_worker(void *arg) {
-    MOSI *obj = (MOSI *) arg;
+void *MOESI::response_worker(void *arg) {
+    MOESI *obj = (MOESI *) arg;
     pthread_mutex_lock(&Bus::resp_lock);
     while(true) {
         while(!Bus::pending_work[obj->id]) {
@@ -26,9 +26,7 @@ void *MOSI::response_worker(void *arg) {
 
         pthread_mutex_lock(&obj->lock);
 
-
-        if(obj->pending_addr == Bus::addr &&
-                (obj->opt != BusRd || Bus::opt != BusRd)) {
+        if(obj->pending_addr == Bus::addr && (obj->opt != BusRd || Bus::opt != BusRd)) {
             assert(obj->pending_addr);
             Bus::recv_nak = true;
         } else {
@@ -44,6 +42,25 @@ void *MOSI::response_worker(void *arg) {
                     }
                     Bus::owner_id = obj->id;
                     break;
+                case 'S':
+                    Bus::read_ex = false;
+                    if(Bus::opt == BusRdX || Bus::opt == BusUpg) {
+                        obj->cache.cache_set_status(Bus::addr, 'I');
+                    }
+                    break;
+                case 'I':
+                    break;
+                case 'E':
+                    Bus::read_ex = false;
+                    if(Bus::opt == BusRd) {
+                        obj->cache.cache_set_status(Bus::addr, 'S');
+
+                    } else {
+                        assert(Bus::opt == BusRdX);
+                        obj->cache.cache_set_status(Bus::addr, 'I');
+                    }
+                    Bus::owner_id = obj->id;
+                    break;
                 case 'O':
                     if(Bus::opt == BusRd || Bus::opt == BusRdX) {
                         Bus::owner_id = obj->id;
@@ -51,19 +68,12 @@ void *MOSI::response_worker(void *arg) {
                     if(Bus::opt == BusRdX || Bus::opt == BusUpg) {
                         obj->cache.cache_set_status(Bus::addr, 'I');
                     }
-                case 'S':
-                    if(Bus::opt == BusRdX || Bus::opt == BusUpg) {
-                        obj->cache.cache_set_status(Bus::addr, 'I');
-                    }
-                    break;
-                case 'I':
                     break;
                 default:
                     assert(0);
             }
         }
-
-       pthread_mutex_unlock(&obj->lock);
+        pthread_mutex_unlock(&obj->lock);
 
         pthread_mutex_lock(&Bus::resp_lock);
         Bus::pending_work[obj->id] = false;
@@ -75,8 +85,8 @@ void *MOSI::response_worker(void *arg) {
     }
 }
 
-void *MOSI::request_worker(void *arg) {
-    MOSI *obj = (MOSI *)arg;
+void *MOESI::request_worker(void *arg) {
+    MOESI *obj = (MOESI *)arg;
     std::string op;
     unsigned long addr;
 
@@ -108,16 +118,21 @@ void *MOSI::request_worker(void *arg) {
     return NULL;
 }
 
-void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
+void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
     assert(addr);
     bool done = false;
     bool cache_transfer = false;
 
     pthread_mutex_lock(&obj->lock);
     char status = obj->cache.cache_check_status(addr);
-    if (status == 'M' ||
+    if ((status == 'E' && op == "R") || status == 'M' ||
             (status == 'S' && op == "R") ||
             (status == 'O' && op == "R")) {
+        obj->cache.update_cache_lru(addr);
+        pthread_mutex_unlock(&obj->lock);
+        return;
+    } else if(status == 'E' && op == "W") {
+        obj->cache.cache_set_status(addr, 'M');
         obj->cache.update_cache_lru(addr);
         pthread_mutex_unlock(&obj->lock);
         return;
@@ -149,7 +164,6 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
                 break;
 
             case 'I':
-                std::cout<<"Cache miss\n";
                 if(op == "R") {
                     obj->opt = BusRd;
                     std::cout<<"Before wait\n";
@@ -158,7 +172,11 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
                     if(Bus::recv_nak) {
                         done = false;
                     } else {
-                        obj->cache.insert_cache(addr, 'S');
+                        if(Bus::read_ex == true) {
+                            obj->cache.insert_cache(addr, 'E');
+                        } else {
+                            obj->cache.insert_cache(addr, 'S');
+                        }
                         obj->pending_addr = addr;
                     }
                 } else {
@@ -172,6 +190,7 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
                     }
                 }
                 break;
+            case 'E':
             default:
                 assert(0);
         }
@@ -181,7 +200,6 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
         }
         pthread_mutex_unlock(&obj->lock);
         pthread_mutex_unlock(&Bus::req_lock);
-
 
         if(status == 'I' && done) {
             if(cache_transfer) {
@@ -194,5 +212,5 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
             }
             //std::cout<<"Done with memory request\n";
         }
-   }
+    }
 }
