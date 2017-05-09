@@ -5,7 +5,7 @@
 #include <math.h>
 #include <assert.h>
 
-#define CACHE_LINE_SIZE 4096
+#define CACHE_BITS 6
 
 enum cache_state {
     Modified = 0,

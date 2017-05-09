@@ -5,7 +5,7 @@
 #include "Cache.h"
 #include "Protocol.h"
 
-#define CACHE_LINE_SIZE 4096
+#define CACHE_LINE_SIZE (1 << (BLOCK_BITS))
 
 unsigned int Cache::cache_lines;
 unsigned int Cache::cache_size;
@@ -48,7 +48,7 @@ void Cache::cache_init(unsigned int size, unsigned int ass) {
     cache_size = size;
     associativity = ass;
     cache_lines = 0;
-    block_bits = 12;
+    block_bits = CACHE_BITS;
     num_set = cache_size / associativity; // MUST be a power of 2
     set_bits = log2(num_set) + 1;
     set_mask = (num_set - 1) << block_bits;

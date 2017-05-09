@@ -192,9 +192,13 @@ void Dragon::handle_request(Dragon *obj, std::string op, unsigned long addr) {
             } else {
                 obj->opt = BusRd;
                 Bus::wait_for_responses(obj->id, addr, BusRd);
+                bool read_ex = Bus::read_ex;
 
                 if(Bus::owner_id != -1) {
                     Protocol::cache_transfers++;
+                    pthread_mutex_unlock(&obj->lock);
+                    pthread_mutex_unlock(&Bus::req_lock);
+
                 } else {
                     obj->pending_addr = addr;
                     pthread_mutex_unlock(&obj->lock);
@@ -205,17 +209,22 @@ void Dragon::handle_request(Dragon *obj, std::string op, unsigned long addr) {
                     pthread_mutex_unlock(&obj->lock);
                 }
 
-                if(Bus::read_ex == true) {
+                if(read_ex == true) {
+                    pthread_mutex_lock(&obj->lock);
                     obj->cache.insert_cache(addr, Modified);
+                    pthread_mutex_unlock(&obj->lock);
                 } else {
+                    pthread_mutex_lock(&Bus::req_lock);
+                    pthread_mutex_lock(&obj->lock);
                     obj->cache.insert_cache(addr, ShModified);
                     Protocol::bus_transactions++;
 
                     obj->opt = BusUpdt;
                     Bus::wait_for_responses(obj->id, addr, BusUpdt);
+
+                    pthread_mutex_unlock(&obj->lock);
+                    pthread_mutex_unlock(&Bus::req_lock);
                 }
-                pthread_mutex_unlock(&obj->lock);
-                pthread_mutex_unlock(&Bus::req_lock);
             }
             break;
 

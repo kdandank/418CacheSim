@@ -7,7 +7,6 @@
 #include "Protocol.h"
 #include "Bus.h"
 #include "Memory.h"
-#include <atomic>
 
 /**
  * Prints the usage for the program
@@ -28,19 +27,12 @@ void process_trace_file(std::string trace_filename) {
     int thread_id;
     std::string op;
     unsigned long addr;
-    std::atomic<long> local_count(0);
 
     while(tracefile >> thread_id) {
         tracefile >> op;
         tracefile >> std::hex >> addr;
         Protocol::process_mem_access(thread_id, op, addr);
-        local_count++;
     }
-
-    /* TODO - Spin waiting while all threads are not done with their accesses.
-     * Something better is possible
-     */
-    while(local_count != Protocol::trace_count);
 }
 
 /**
@@ -62,7 +54,7 @@ void print_mem_metrics(){
     std::cout << "\nBus Transactions = " << Protocol::bus_transactions;
     std::cout << "\nMemory Requests = " << Protocol::mem_reqs;
     std::cout << "\nMemory Write Backs = " << Protocol::mem_write_backs;
-    std::cout << "\nCache Transfers = " << Protocol::cache_transfers << "\n";
+    std::cout << "\nCache Transfers = " << Protocol::cache_transfers;
 }
 
 int main(int argc, char *argv[]) {
