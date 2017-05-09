@@ -42,6 +42,9 @@ void *MOSI::response_worker(void *arg) {
                         assert(Bus::opt == BusRdX);
                         obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
+                    /* This will never be on a pending address because if it
+                     * was pending, this would have been NAKd
+                     */
                     Bus::owner_id = obj->id;
                     break;
                 case Owner:
@@ -55,6 +58,9 @@ void *MOSI::response_worker(void *arg) {
                     if(Bus::opt == BusRdX || Bus::opt == BusUpg) {
                         obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
+                    if(obj->pending_addr != Bus::addr) {
+                        Bus::owner_id = obj->id;
+                    }
                     break;
                 case Invalid:
                     break;
@@ -63,7 +69,7 @@ void *MOSI::response_worker(void *arg) {
             }
         }
 
-       pthread_mutex_unlock(&obj->lock);
+        pthread_mutex_unlock(&obj->lock);
 
         pthread_mutex_lock(&Bus::resp_lock);
         Bus::pending_work[obj->id] = false;

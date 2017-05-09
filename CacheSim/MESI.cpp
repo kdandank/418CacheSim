@@ -39,11 +39,18 @@ void *MESI::response_worker(void *arg) {
                         obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
                     Protocol::mem_write_backs++;
+                    /* This will never be on a pending address because if it
+                     * was pending, this would have been NAKd
+                     */
+                    Bus::owner_id = obj->id;
                     break;
                 case Shared:
                     Bus::read_ex = false;
                     if(Bus::opt == BusRdX) {
                         obj->cache.cache_set_status(Bus::addr, Invalid);
+                    }
+                    if(Bus::addr != obj->pending_addr) {
+                        Bus::owner_id = obj->id;
                     }
                     break;
                 case Invalid:
@@ -54,6 +61,9 @@ void *MESI::response_worker(void *arg) {
                         obj->cache.cache_set_status(Bus::addr, Shared);
                     } else {
                         obj->cache.cache_set_status(Bus::addr, Invalid);
+                    }
+                    if(Bus::addr != obj->pending_addr) {
+                        Bus::owner_id = obj->id;
                     }
                     break;
                 default:
@@ -108,6 +118,7 @@ void *MESI::request_worker(void *arg) {
 void MESI::handle_request(MESI *obj, std::string op, unsigned long addr) {
     assert(addr);
     bool done = false;
+    bool cache_transfer = false;
 
     pthread_mutex_lock(&obj->lock);
     cache_state status = obj->cache.cache_check_status(addr);
@@ -177,15 +188,25 @@ void MESI::handle_request(MESI *obj, std::string op, unsigned long addr) {
             default:
                 assert(0);
         }
+        /* Cache transfer will only matter if it was in Invalid state */
+        if(Bus::owner_id != -1) {
+            cache_transfer = true;
+        }
         pthread_mutex_unlock(&obj->lock);
         pthread_mutex_unlock(&Bus::req_lock);
 
         if(status == Invalid && done) {
-            Memory::request(addr);
-            pthread_mutex_lock(&obj->lock);
-            obj->pending_addr = 0;
-            pthread_mutex_unlock(&obj->lock);
+            if(cache_transfer) {
+                Protocol::cache_transfers++;
+            } else {
+                Memory::request(addr);
+                pthread_mutex_lock(&obj->lock);
+                obj->pending_addr = 0;
+                pthread_mutex_unlock(&obj->lock);
+            }
             //std::cout<<"Done with memory request\n";
         }
+
+
     }
 }

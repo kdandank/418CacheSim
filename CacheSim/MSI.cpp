@@ -41,10 +41,19 @@ void *MSI::response_worker(void *arg) {
                     }
                     /* Need to write back to memory */
                     Protocol::mem_write_backs++;
+
+                    /* This will never be on a pending address because if it
+                     * was pending, this would have been NAKd
+                     */
+                    Bus::owner_id = obj->id;
                     break;
                 case Shared:
                     if(Bus::opt == BusRdX) {
                         obj->cache.cache_set_status(Bus::addr, Invalid);
+                    }
+                    /* It is possible that we don't have the data ourselves */
+                    if(obj->pending_addr != Bus::addr) {
+                        Bus::owner_id = obj->id;
                     }
                     break;
                 case Invalid:
@@ -101,6 +110,7 @@ void *MSI::request_worker(void *arg) {
 void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
     assert(addr);
     bool done = false;
+    bool cache_transfer = false;
 
     pthread_mutex_lock(&obj->lock);
     cache_state status = obj->cache.cache_check_status(addr);
@@ -160,15 +170,24 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
             default:
                 assert(0);
         }
+        /* Cache transfer will only matter if it was in Invalid state */
+        if(Bus::owner_id != -1) {
+            cache_transfer = true;
+        }
         pthread_mutex_unlock(&obj->lock);
         pthread_mutex_unlock(&Bus::req_lock);
 
         if(status == Invalid && done) {
-            Memory::request(addr);
-            pthread_mutex_lock(&obj->lock);
-            obj->pending_addr = 0;
-            pthread_mutex_unlock(&obj->lock);
+            if(cache_transfer) {
+                Protocol::cache_transfers++;
+            } else {
+                Memory::request(addr);
+                pthread_mutex_lock(&obj->lock);
+                obj->pending_addr = 0;
+                pthread_mutex_unlock(&obj->lock);
+            }
             //std::cout<<"Done with memory request\n";
         }
+
     }
 }

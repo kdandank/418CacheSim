@@ -26,7 +26,8 @@ void *MOESI::response_worker(void *arg) {
 
         pthread_mutex_lock(&obj->lock);
 
-        if(obj->pending_addr == Bus::addr && (obj->opt != BusRd || Bus::opt != BusRd)) {
+        if(obj->pending_addr == Bus::addr && (obj->opt != BusRd ||
+                Bus::opt != BusRd)) {
             assert(obj->pending_addr);
             Bus::recv_nak = true;
         } else {
@@ -40,12 +41,18 @@ void *MOESI::response_worker(void *arg) {
                         assert(Bus::opt == BusRdX);
                         obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
+                    /* This will never be on a pending address because if it
+                     * was pending, this would have been NAKd
+                     */
                     Bus::owner_id = obj->id;
                     break;
                 case Shared:
                     Bus::read_ex = false;
                     if(Bus::opt == BusRdX || Bus::opt == BusUpg) {
                         obj->cache.cache_set_status(Bus::addr, Invalid);
+                    }
+                    if(obj->pending_addr != Bus::addr) {
+                        Bus::owner_id = obj->id;
                     }
                     break;
                 case Invalid:
@@ -59,7 +66,9 @@ void *MOESI::response_worker(void *arg) {
                         assert(Bus::opt == BusRdX);
                         obj->cache.cache_set_status(Bus::addr, Invalid);
                     }
-                    Bus::owner_id = obj->id;
+                    if(obj->pending_addr != Bus::addr) {
+                        Bus::owner_id = obj->id;
+                    }
                     break;
                 case Owner:
                     if(Bus::opt == BusRd || Bus::opt == BusRdX) {

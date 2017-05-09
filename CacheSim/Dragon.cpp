@@ -26,40 +26,41 @@ void *Dragon::response_worker(void *arg) {
 
         pthread_mutex_lock(&obj->lock);
 
-        if(obj->pending_addr == Bus::addr && (obj->opt != BusRd || Bus::opt != BusRd)) {
-            assert(obj->pending_addr);
-            Bus::recv_nak = true;
-        } else {
-            cache_state status = obj->cache.cache_check_status(Bus::addr);
-            switch(status) {
-                case Modified:
-                    assert(Bus::opt == BusRd);
-                    obj->cache.cache_set_status(Bus::addr, ShModified);
+        cache_state status = obj->cache.cache_check_status(Bus::addr);
+        switch(status) {
+            case Modified:
+                assert(Bus::opt == BusRd);
+                obj->cache.cache_set_status(Bus::addr, ShModified);
+                Bus::owner_id = obj->id;
+                Bus::read_ex = false;
+                break;
+            case ShModified:
+                if(Bus::opt == BusRd) {
                     Bus::owner_id = obj->id;
-                    Bus::read_ex = false;
-                    break;
-                case ShModified:
-                    if(Bus::opt == BusRd) {
-                        Bus::owner_id = obj->id;
-                    } else if(Bus::opt == BusUpdt) {
-                        obj->cache.cache_set_status(Bus::addr, ShClean);
-                    }
-                    Bus::read_ex = false;
-                    break;
-                case Invalid:
-                    break;
-                case ShClean:
-                    Bus::read_ex = false;
-                    break;
-                case Exclusive:
-                    Bus::read_ex = false;
-                    assert(Bus::opt == BusRd);
+                } else if(Bus::opt == BusUpdt) {
                     obj->cache.cache_set_status(Bus::addr, ShClean);
-                    //Bus::owner_id = obj->id;
-                    break;
-                default:
-                    assert(0);
-            }
+                }
+                Bus::read_ex = false;
+                break;
+            case Invalid:
+                break;
+            case ShClean:
+                Bus::read_ex = false;
+                if(obj->pending_addr != Bus::addr) {
+                    Bus::owner_id = obj->id;
+                }
+                break;
+            case Exclusive:
+                Bus::read_ex = false;
+                assert(Bus::opt == BusRd);
+                obj->cache.cache_set_status(Bus::addr, ShClean);
+
+                if(obj->pending_addr != Bus::addr) {
+                    Bus::owner_id = obj->id;
+                }
+                break;
+            default:
+                assert(0);
         }
         pthread_mutex_unlock(&obj->lock);
 
@@ -144,6 +145,8 @@ void Dragon::handle_request(Dragon *obj, std::string op, unsigned long addr) {
             } else {
                 obj->cache.cache_set_status(addr, ShModified);
             }
+            pthread_mutex_unlock(&obj->lock);
+            pthread_mutex_unlock(&Bus::req_lock);
             break;
         case ShModified:
             assert(op == "W");
@@ -155,6 +158,8 @@ void Dragon::handle_request(Dragon *obj, std::string op, unsigned long addr) {
             if(Bus::read_ex == true) {
                 obj->cache.cache_set_status(addr, Modified);
             }
+            pthread_mutex_unlock(&obj->lock);
+            pthread_mutex_unlock(&Bus::req_lock);
             break;
 
         case Invalid:
@@ -174,11 +179,13 @@ void Dragon::handle_request(Dragon *obj, std::string op, unsigned long addr) {
                 if(Bus::owner_id != -1) {
                     Protocol::cache_transfers++;
                 } else {
+                    obj->pending_addr = addr;
                     pthread_mutex_unlock(&obj->lock);
                     pthread_mutex_unlock(&Bus::req_lock);
                     Memory::request(addr);
-                    pthread_mutex_lock(&Bus::req_lock);
                     pthread_mutex_lock(&obj->lock);
+                    obj->pending_addr = 0;
+                    pthread_mutex_unlock(&obj->lock);
                 }
             } else {
                 obj->opt = BusRd;
@@ -187,11 +194,13 @@ void Dragon::handle_request(Dragon *obj, std::string op, unsigned long addr) {
                 if(Bus::owner_id != -1) {
                     Protocol::cache_transfers++;
                 } else {
+                    obj->pending_addr = addr;
                     pthread_mutex_unlock(&obj->lock);
                     pthread_mutex_unlock(&Bus::req_lock);
                     Memory::request(addr);
-                    pthread_mutex_lock(&Bus::req_lock);
                     pthread_mutex_lock(&obj->lock);
+                    obj->pending_addr = 0;
+                    pthread_mutex_unlock(&obj->lock);
                 }
 
                 if(Bus::read_ex == true) {
@@ -203,6 +212,8 @@ void Dragon::handle_request(Dragon *obj, std::string op, unsigned long addr) {
                     obj->opt = BusUpdt;
                     Bus::wait_for_responses(obj->id, addr, BusUpdt);
                 }
+                pthread_mutex_unlock(&obj->lock);
+                pthread_mutex_unlock(&Bus::req_lock);
             }
             break;
 
@@ -210,8 +221,6 @@ void Dragon::handle_request(Dragon *obj, std::string op, unsigned long addr) {
         case Modified:
         default:
             assert(0);
-        pthread_mutex_unlock(&obj->lock);
-        pthread_mutex_unlock(&Bus::req_lock);
 
     }
 }
