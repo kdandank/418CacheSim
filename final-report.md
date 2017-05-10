@@ -24,17 +24,11 @@ artificial test inputs to be able to clearly differentiate the performance of ea
 > The protocols that we have implemented are: <br>
 > Write-Invalidate Protocols <br>
 > 1. MSI <br>
-> MSI - Processor Transactions: <br>
-> ![alt text][MSI-processor.png] <br>
-> MSI - Snooped Bus Transactions: <br>
-> ![alt text][MSI-bus.png] <br>
+> ![alt text][MSI.png] <br>
 > 2. MESI <br>
 > ![alt text][MESI.png] <br>
 > 3. MOSI <br>
-> MOSI - Processor Transactions: <br>
-> ![alt text][MOSI-processor.png] <br>
-> MOSI - Snooped Bus Transactions: <br>
-> ![alt text][MOSI-bus.png] <br>
+> ![alt text][MOSI.png] <br>
 > 4. MOESI <br>
 > ![alt text][MOESI.png] <br>
 > Write-Update Protocols <br>
@@ -186,7 +180,7 @@ thread is writing and the other threads are reading. <br>
 
 ## 5. RESULTS
 >### Interesting Conclusions
-> 1. Adding ‘E’ state: <br>
+>#### Adding ‘E’ state: <br>
 > To measure the performance differences caused by adding the Exclusive state to the protocols, we can look at the
 differences in metrics in MSI vs MESI and MOSI vs MOESI. The main benefit of the Exclusive state is in reducing the
 number of snooping bus transactions required. If we consider a parallel program where each thread works on a chunk of
@@ -200,7 +194,7 @@ cacheline to Modified. <br>
 This gives a significant boost in programs which access and modify unique memory addresses. <br>
 From the tests and memory traces that we generated, adding the Exclusive state reduced the number of snooping bus
 transactions by 5-6%. (These tests also include other memory accesses, so this is a considerable reduction). <br>
-> 2. Adding ‘O’ state : <br>
+>#### Adding ‘O’ state : <br>
 > To measure the performance differences caused by adding the Owner state to the protocols, we can look at the
 differences in metrics in MSI vs MOSI and MESI vs MOESI.
 The intention in adding the Owner state is to reduce the number of memory write backs required by the protocol
@@ -214,7 +208,7 @@ state instead of invalidating the cacheline. To ensure correctness, whenever a c
 state is evicted from the cache, the memory writeback needs to be performed. <br>
 From the tests and memory traces that we generated, adding the Exclusive state reduced the number of snooping bus
 transactions by 8-10%. (Again, these tests also include other memory accesses, so this is a considerable reduction) <br>
-> 3. Write-Invalidation vs Write-Update <br>
+>#### Write-Invalidation vs Write-Update <br>
 > Since we have implemented both write invalidation and write update protocols, our simulator can also tell whether
 for a given program or memory trace, write invalidation protocols will be better or write update. <br>
 For a write-invalidation protocol, when a processor writes to a memory location, other processor caches need to
@@ -227,22 +221,24 @@ From our tests, we saw lesser number of bus transactions with Dragon for page_ra
 score updated in one iteration is used by the other threads in the next iteration. This would explain why updating
 rather than invalidating reduced the number of bus transactions. <br>
 
-## 7. SCHEDULE
+## 6. SCHEDULE
 > Apr 11 - Apr 17 - Implement a simple LRU cache for a single processor <br>
 > Apr 18 - Apr 24 - Add support for cache coherence protocols - MSI, MESI <br>
 > Apr 25 - May 01 - Add additional protocols - MOSI, MOESI, Dragon, Firefly, etc. <br>
 > May 02 - May 07 - Generate different types of memory workloads and Perform Analysis <br>
 > May 09 - May 11 - Project Presentation Preparation <br>
 
+## 7. REFERENCES
+> 1. http://wiki.expertiza.ncsu.edu/index.php/CSC/ECE_506_Spring_2010/8a_sk?ref=driverlayer.com/image
+> 2. {TODO}
+
 [//]: # (Links to images below this line)
 
-[MSI-processor.png]: https://upload.wikimedia.org/wikipedia/commons/8/8a/State_diagram_for_processor_transactions.png "MSI Protocol"
-[MSI-bus.png]: https://upload.wikimedia.org/wikipedia/commons/e/ea/State_diagram_for_bus_transactions.png "MSI Protocol"
-[MESI.png]: http://15418.courses.cs.cmu.edu/spring2017content/lectures/10_cachecoherence1/images/slide_033.jpg "MESI Protocol"
-[MOSI-processor.png]: https://upload.wikimedia.org/wikipedia/commons/4/4d/MOSI_Processor_Transactions.png "MOSI-1 Protocol"
-[MOSI-bus.png]: https://upload.wikimedia.org/wikipedia/commons/5/50/MOSI_Bus_Transactions_Updated.png "MOSI-2 Protocol"
-[MOESI.png]: http://wiki.expertiza.ncsu.edu/images/thumb/4/4e/MOESIfig.jpg/450px-MOESIfig.jpg "MOESI Protocol"
-[Dragon.png]: http://15418.courses.cs.cmu.edu/spring2017content/lectures/10_cachecoherence1/images/slide_038.jpg "Dragon Protocol"
+[MSI.png]: https://kshitizdange.github.io/418CacheSim/images/MSI.png "MSI Protocol"
+[MESI.png]: https://kshitizdange.github.io/418CacheSim/images/MESI.png "MESI Protocol"
+[MOSI.png]: https://kshitizdange.github.io/418CacheSim/images/MOSI.png "MOSI Protocol"
+[MOESI.png]: https://kshitizdange.github.io/418CacheSim/images/MOESI.png "MOESI Protocol"
+[Dragon.png]: https://kshitizdange.github.io/418CacheSim/images/Dragon.png "Dragon Protocol"
 [basic_stats]: https://kshitizdange.github.io/418CacheSim/images/Basic_stats.png "Basic Stats Graph"
 [MSIvMESI]: https://kshitizdange.github.io/418CacheSim/images/MSIvMESI.png "MSIvMESI Stats Graph"
 [MSIvMOSI]: https://kshitizdange.github.io/418CacheSim/images/MSIvMOSI.png "MSIvMOSI Stats Graph"
