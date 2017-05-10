@@ -182,11 +182,14 @@ on the snooping bus, it NACKs the action, which causes the cache worker to retry
 avoids the livelock issue and ensures completion.
 
 ## 5. GRAPHS AND ANALYSIS
-> 1. MSIvMESI: This tests out an artificial trace that Read and Writes to unique addresses on separate cache lines. <br>
+> 1. MSI vs MESI: This tests out an artificial trace that Read and Writes to unique addresses on separate cache lines. <br>
 > ![alt text][MSIvMESI] <br>
-> 2. MSIvMOSI: This tests out an artificial trace that shows how write-backs are significantly reduced in MOSI as
+> 2. MSI vs MOSI: This tests out an artificial trace that shows how write-backs are significantly reduced in MOSI as
 compared to MSI. <br>
 > ![alt text][MSIvMOSI] <br>
+> 3. MOESI vs Dragon: This tests out an artificial trace that shows write-update is significantly better when only one
+thread is writing and the other threads are reading. <br>
+> ![alt text][MOESIvDragon] <br>
 
 ## 6. PLATFORM CHOICE
 > * We have used C++ as the programming language, as this project mainly involves being able to read the
@@ -212,6 +215,7 @@ memory traces from input files and dumping them into an output file. This was ea
 [basic_stats]: https://kshitizdange.github.io/418CacheSim/images/Basic_stats.png "Basic Stats Graph"
 [MSIvMESI]: https://kshitizdange.github.io/418CacheSim/images/MSIvMESI.png "MSIvMESI Stats Graph"
 [MSIvMOSI]: https://kshitizdange.github.io/418CacheSim/images/MSIvMOSI.png "MSIvMOSI Stats Graph"
+[MOESIvDragon]: https://kshitizdange.github.io/418CacheSim/images/MOESIvDragon.png "MOESIvDragon Stats Graph"
 
 
 
