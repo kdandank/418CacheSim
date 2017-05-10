@@ -20,36 +20,36 @@ enum cache_state {
 class CacheLine
 {
     public:
-        unsigned int tag;
+        unsigned long tag;
         cache_state status;
-        unsigned int lru_num;
+        unsigned long lru_num;
         CacheLine();
-        CacheLine(unsigned int t, cache_state s);
+        CacheLine(unsigned long t, cache_state s);
 };
 
 class Set
 {
     public:
-        unsigned int current_lru;
+        unsigned long current_lru;
         std::vector<CacheLine> cl;
 
-        Set(unsigned int ass);
+        Set(unsigned long ass);
 };
 
 
 class Cache
 {
     private:
-        static unsigned int cache_lines;
-        static unsigned int cache_size; // in MB
-        static unsigned int associativity;
+        static unsigned long cache_lines;
+        static unsigned long cache_size; // in MB
+        static unsigned long associativity;
         static unsigned long num_set;
-        static unsigned int set_bits;
+        static unsigned long set_bits;
         static unsigned long set_mask;
 
         std::vector<Set> sets;
     public:
-        static unsigned int block_bits;
+        static unsigned long block_bits;
 
         Cache();
 
@@ -58,7 +58,7 @@ class Cache
         cache_state cache_check_status(unsigned long addr);
         void cache_set_status(unsigned long addr, cache_state status);
 
-        static void cache_init(unsigned int size, unsigned int ass);
+        static void cache_init(unsigned long size, unsigned long ass);
 };
 
 #endif /* _CACHE_H_ */

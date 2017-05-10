@@ -37,7 +37,7 @@ void Protocol::initialize(std::string protocol, int num_cores, int cache_size,
     pthread_cond_init(&trace_cv, NULL);
 
     /* Set cache properties */
-    Cache::cache_init(cache_size, associativity);
+    Cache::cache_init((long)cache_size, (long)associativity);
     for(int i = 0; i < num_cores; i++) {
         if(protocol == "MSI") {
             sn_caches.push_back(new MSI(i));

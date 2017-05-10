@@ -7,50 +7,51 @@
 
 #define CACHE_LINE_SIZE (1 << (BLOCK_BITS))
 
-unsigned int Cache::cache_lines;
-unsigned int Cache::cache_size;
-unsigned int Cache::associativity;
-unsigned int Cache::block_bits;
+unsigned long Cache::cache_lines;
+unsigned long Cache::cache_size;
+unsigned long Cache::associativity;
+unsigned long Cache::block_bits;
 unsigned long Cache::num_set;
-unsigned int Cache::set_bits;
+unsigned long Cache::set_bits;
 unsigned long Cache::set_mask;
 
-CacheLine::CacheLine(unsigned int t, cache_state s) {
+CacheLine::CacheLine(unsigned long t, cache_state s) {
     tag = t;
     status = s;
     lru_num = 0;
 }
 
-Set::Set(unsigned int ass) {
+Set::Set(unsigned long ass) {
     current_lru = 0;
-    for(int i = 0; i < ass; i++) {
-        unsigned int t = 0;
+    for(long i = 0; i < ass; i++) {
+        unsigned long t = 0;
         cache_state s = Invalid;
         cl.push_back(CacheLine(t, s));
     }
 }
 
 Cache::Cache() {
-    //unsigned int line_size = cache_size / CACHE_LINE_SIZE;
-    unsigned int num_sets = cache_size / associativity;
+    //unsigned long line_size = cache_size / CACHE_LINE_SIZE;
+    unsigned long num_sets = cache_size / associativity;
 
     // #######
     assert((num_sets & (num_sets - 1)) == 0);
     // #######
 
-    for(int i = 0; i < num_sets; i++) {
+    for(long i = 0; i < num_sets; i++) {
         sets.push_back(Set(associativity));
     }
 }
 
-void Cache::cache_init(unsigned int size, unsigned int ass) {
+void Cache::cache_init(unsigned long size, unsigned long ass) {
 
-    cache_size = size;
+    cache_size = size * (1 << 6);
     associativity = ass;
     cache_lines = 0;
     block_bits = CACHE_BITS;
     num_set = cache_size / associativity; // MUST be a power of 2
-    set_bits = log2(num_set) + 1;
+    set_bits = log2(num_set);
+    assert(!(num_set & (num_set - 1)));
     set_mask = (num_set - 1) << block_bits;
 }
 
@@ -118,7 +119,7 @@ void Cache::insert_cache(unsigned long addr, cache_state status) {
 
         Protocol::mem_write_backs++;
         CacheLine &evict = s.cl[0];
-        unsigned int low = INT_MAX;
+        unsigned long low = s.cl[0].lru_num;
         for(CacheLine &c : s.cl) {
             if(c.lru_num < low) {
                 low = c.lru_num;
