@@ -101,7 +101,7 @@ void Memory::request(unsigned long addr) {
     //std::cout<<"Waiting for memory\n";
     while(!req.done || req.waiters != 0) {
         pthread_cond_wait(&req.cv, &lock);
-        std::cout<<req.done<<"\t"<<req.waiters<<"\n";
+        //std::cout<<req.done<<"\t"<<req.waiters<<"\n";
     }
     //std::cout<<"Woke up\n";
     pthread_mutex_unlock(&lock);

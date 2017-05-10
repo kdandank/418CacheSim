@@ -158,6 +158,8 @@ void Dragon::handle_request(Dragon *obj, std::string op, unsigned long addr) {
             //std::cout<<"After wait\n";
             if(Bus::read_ex == true) {
                 obj->cache.cache_set_status(addr, Modified);
+            } else {
+                Protocol::cache_transfers++;
             }
             pthread_mutex_unlock(&obj->lock);
             pthread_mutex_unlock(&Bus::req_lock);
