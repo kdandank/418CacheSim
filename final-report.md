@@ -146,20 +146,7 @@ cache worker does not have the cacheline, whether the snooping cache can provide
 caches can also NACK the transaction, if its own cache has a conflicting pending transaction that is waiting to be
 serviced by the split transaction bus. <br>
 
-### 3.5. Protocols Low Level Design Choices:
-> We have designed all the aforementioned protocols so that a cache miss will try to be serviced from another cache
-(if a cache already has the data). This reduces the number of memory requests required. <br>
-> In MOSI and MOESI implementations, memory writebacks only happen when a cacheline in Modified or Owner state is
-evicted. If a cacheline is invalidated due to the protocol, the cache transfers the cacheline to the new owner of the
-cacheline. (We deem the cache which has a line in the Modified or Owner state to be the owner.) This enhances the
-effect of the additional Owner state. <br>
-> In our Dragon implementation, when a line is in the SharedClean or SharedModified state and tries to perform a write,
-we first check whether it is the only cache holding the line or not. If it is the only one holding the cacheline, then
-instead of having to perform a BusUpdate and moving to the SharedModified state, it can simply move to the Modified
-state. This helps in the case where other caches have evicted that line causing only one cache to have the line. This
-saves on unnecessary bus transactions.
-
-### 4.0. Protocols Low Level Design Choices:
+## 4.0. Protocols Low Level Design Choices:
 > We have designed all the aforementioned protocols so that a cache miss will try to be serviced from another cache
 (if a cache already has the data). This reduces the number of memory requests required. <br>
 > In MOSI and MOESI implementations, memory writebacks only happen when a cacheline in Modified or Owner state is
@@ -171,7 +158,7 @@ we first check whether it is the only cache holding the line or not. If it is th
 instead of having to perform a BusUpdate and moving to the SharedModified state, it can simply move to the Modified
 state. This helps in the case where other caches have evicted that line causing only one cache to have the line. This
 saves on unnecessary bus transactions <br>
-> #### NACK
+> ### NACK
 > As mentioned earlier, our choice of implementation for the snooping bus and the split transaction bus can
 cause a snooping bus request to conflict with a pending split transaction bus. For example, while a memory load for a
 cacheline is pending in the request table from a read issued by one processor, another cache can be requesting
