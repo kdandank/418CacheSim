@@ -176,6 +176,22 @@ compared to MSI. <br>
 > 3. MOESI vs Dragon: This tests out an artificial trace that shows write-update is significantly better when only one
 thread is writing and the other threads are reading. <br>
 > ![alt text][MOESIvDragon] <br>
+> 4. Lock Add: In this test all the threads try to add '1' to a global counter using locks. <br>
+> ![alt text][lock-add] <br>
+> 5. Wild Add: In this test all the threads try to add '1' to a global counter without using locks. <br>
+> ![alt text][wild-add] <br>
+> 6. Lock Fill Bucket: This tests makes buckets for numbers, so that it can count how many times each number is
+present in the array. This is done using locks. <br>
+> ![alt text][lock-fill] <br>
+> 7. Wild Fill Bucket: This tests makes buckets for numbers, so that it can count how many times each number is
+present in the array. Locks are not used in this case. <br>
+> ![alt text][wild-fill] <br>
+> 8. Mandelbrot: This is the mandelbrot from Assignment 1. <br>
+> ![alt text][mandelbrot] <br>
+> 9. Pagerank: This is the Pagerank from Assignment 3, run on tiny.graph. <br>
+> ![alt text][pagerank] <br>
+> 10. BFS: This is the BFS top-down approach from from Assignment 3 run on grid_100x100. <br>
+> ![alt text][bfs] <br>
 > ### We are in the process of adding more graphs here..
 
 ## 4. PLATFORM CHOICE
@@ -224,19 +240,14 @@ From our tests, we saw lesser number of bus transactions with Dragon for page_ra
 score updated in one iteration is used by the other threads in the next iteration. This would explain why updating
 rather than invalidating reduced the number of bus transactions. <br>
 
-## 6. SCHEDULE
-> Apr 11 - Apr 17 - Implement a simple LRU cache for a single processor <br>
-> Apr 18 - Apr 24 - Add support for cache coherence protocols - MSI, MESI <br>
-> Apr 25 - May 01 - Add additional protocols - MOSI, MOESI, Dragon, Firefly, etc. <br>
-> May 02 - May 07 - Generate different types of memory workloads and Perform Analysis <br>
-> May 09 - May 11 - Project Presentation Preparation <br>
-
-## 7. REFERENCES
+## 6. REFERENCES
 > 1. http://wiki.expertiza.ncsu.edu/index.php/CSC/ECE_506_Spring_2010/8a_sk?ref=driverlayer.com/image
 > 2. Suleman, Linda Bigelow Veynu Narasiman Aater. "An Evaluation of Snoop-Based Cache Coherence Protocols."
 > 3. en.wikipedia.org
 > 4. 15-618 Course Slides
-> 5. {TODO}
+> 5. https://software.intel.com/en-us/articles/pin-a-dynamic-binary-instrumentation-tool
+> 6. https://software.intel.com/sites/landingpage/pintool/docs/65163/Pin/html/index.html
+> 7. {more TODO}
 
 [//]: # (Links to images below this line)
 
@@ -250,5 +261,12 @@ rather than invalidating reduced the number of bus transactions. <br>
 [MSIvMOSI]: https://kshitizdange.github.io/418CacheSim/images/MSIvMOSI.png "MSIvMOSI Stats Graph"
 [MOESIvDragon]: https://kshitizdange.github.io/418CacheSim/images/MOESIvDragon.png "MOESIvDragon Stats Graph"
 [SystemArch]: https://kshitizdange.github.io/418CacheSim/images/SystemArch.png "System Architecture"
+[lock-add]: https://kshitizdange.github.io/418CacheSim/images/lock-add.png "lock-Add"
+[wild-add]: https://kshitizdange.github.io/418CacheSim/images/wild-add.png "wild-Add"
+[lock-fill]: https://kshitizdange.github.io/418CacheSim/images/lock-fill.png "lock-fill"
+[wild-fill]: https://kshitizdange.github.io/418CacheSim/images/wild-fill.png "wild-fill"
+[mandelbrot]: https://kshitizdange.github.io/418CacheSim/images/mandelbrot.png "mandelbrot"
+[pagerank]: https://kshitizdange.github.io/418CacheSim/images/pagerank.png "pagerank"
+[bfs]: https://kshitizdange.github.io/418CacheSim/images/bfs.png "bfs"
 
 
