@@ -184,7 +184,9 @@ avoids the livelock issue and ensures completion.
 ## 5. GRAPHS AND ANALYSIS
 > 1. MSIvMESI: This tests out an artificial trace that Read and Writes to unique addresses on separate cache lines. <br>
 > ![alt text][MSIvMESI] <br>
-> 2.
+> 2. MSIvMOSI: This tests out an artificial trace that shows how write-backs are significantly reduced in MOSI as
+compared to MSI. <br>
+> ![alt text][MSIvMOSI] <br>
 
 ## 6. PLATFORM CHOICE
 > * We have used C++ as the programming language, as this project mainly involves being able to read the
@@ -209,6 +211,7 @@ memory traces from input files and dumping them into an output file. This was ea
 [Dragon.png]: http://15418.courses.cs.cmu.edu/spring2017content/lectures/10_cachecoherence1/images/slide_038.jpg "Dragon Protocol"
 [basic_stats]: https://kshitizdange.github.io/418CacheSim/images/Basic_stats.png "Basic Stats Graph"
 [MSIvMESI]: https://kshitizdange.github.io/418CacheSim/images/MSIvMESI.png "MSIvMESI Stats Graph"
+[MSIvMOSI]: https://kshitizdange.github.io/418CacheSim/images/MSIvMOSI.png "MSIvMOSI Stats Graph"
 
 
 
