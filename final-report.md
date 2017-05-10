@@ -159,6 +159,8 @@ we first check whether it is the only cache holding the line or not. If it is th
 instead of having to perform a BusUpdate and moving to the SharedModified state, it can simply move to the Modified
 state. This helps in the case where other caches have evicted that line causing only one cache to have the line. This
 saves on unnecessary bus transactions <br>
+> In Dragon write-back update, similar to MOSI and MOESI, a snooping bus transaction does not cause a memory writeback.
+Only an eviction of a cacheline in a Modified or SharedModified state would cause a memory writeback. <br>
 > ### NACK
 > As mentioned earlier, our choice of implementation for the snooping bus and the split transaction bus can
 cause a snooping bus request to conflict with a pending split transaction bus. For example, while a memory load for a
@@ -179,10 +181,51 @@ compared to MSI. <br>
 thread is writing and the other threads are reading. <br>
 > ![alt text][MOESIvDragon] <br>
 
-## 6. PLATFORM CHOICE
-> * We have used C++ as the programming language, as this project mainly involves being able to read the
-memory traces from input files and dumping them into an output file. This was easy to achieve in C++. <br>
-> * For generating memory traces, we have modified and used Intel's pintool.
+## 4. PLATFORM CHOICE
+> We used C++ as the programming language for creating both the pintools and the cache simulator.
+
+## 5. RESULTS
+>### Interesting Conclusions
+> 1. Adding ‘E’ state: <br>
+> To measure the performance differences caused by adding the Exclusive state to the protocols, we can look at the
+differences in metrics in MSI vs MESI and MOSI vs MOESI. The main benefit of the Exclusive state is in reducing the
+number of snooping bus transactions required. If we consider a parallel program where each thread works on a chunk of
+an array and updates only that chunk, or if we assume a sequential program that has a single thread, then in these
+cases, there will be a lot of cases where a program is reading a cacheline and updating it. In MSI, this would
+translate to first loading the cacheline using a BusRd moving to the S state, and then performing a BusRdX and moving
+to the M state. This requires two snooping bus transactions. In the case of MESI, this can be done in a single
+transaction. The cache would perform a BusRd moving to the E state and then since no other cache has the cacheline,
+there is no need of a BusRdX transaction to move to the M state. It can just silently change the status of the
+cacheline to Modified. <br>
+This gives a significant boost in programs which access and modify unique memory addresses. <br>
+From the tests and memory traces that we generated, adding the Exclusive state reduced the number of snooping bus
+transactions by 5-6%. (These tests also include other memory accesses, so this is a considerable reduction). <br>
+> 2. Adding ‘O’ state : <br>
+> To measure the performance differences caused by adding the Owner state to the protocols, we can look at the
+differences in metrics in MSI vs MOSI and MESI vs MOESI.
+The intention in adding the Owner state is to reduce the number of memory write backs required by the protocol
+especially on cache invalidations. To understand how the Owner state helps, we can imagine a parallel program where
+one thread writes to a memory address, while the other threads simply observe or read the value at the memory address.
+In the MSI protocol case, whenever the thread writes to the memory address, it would move to the Modified state and
+when the other threads would want to read from that address, it would have to flush the data to memory and move to
+the Shared state. This would result in a memory writeback each time. On the other hand, if we consider the MOSI
+protocol, instead of having to flush the contents to memory each time, the writer thread would move to the Owner
+state instead of invalidating the cacheline. To ensure correctness, whenever a cacheline in the Owner or Modified
+state is evicted from the cache, the memory writeback needs to be performed. <br>
+From the tests and memory traces that we generated, adding the Exclusive state reduced the number of snooping bus
+transactions by 8-10%. (Again, these tests also include other memory accesses, so this is a considerable reduction) <br>
+> 3. Write-Invalidation vs Write-Update <br>
+> Since we have implemented both write invalidation and write update protocols, our simulator can also tell whether
+for a given program or memory trace, write invalidation protocols will be better or write update. <br>
+For a write-invalidation protocol, when a processor writes to a memory location, other processor caches need to
+invalidate that cacheline. In a write-update protocol, instead of invalidating the cachelines, it sends the updated
+cacheline to the other caches. Therefore, in cases where the other processors will need to read those values in the
+future, write-update performs well, but if the other processors are not going to be needing those values, then the
+updates are not going to be of any use, and will just cause extra bus transactions. Therefore, the effects of the
+protocol would be completely dependent. <br>
+From our tests, we saw lesser number of bus transactions with Dragon for page_rank and mandelbrot. In pagerank, the
+score updated in one iteration is used by the other threads in the next iteration. This would explain why updating
+rather than invalidating reduced the number of bus transactions. <br>
 
 ## 7. SCHEDULE
 > Apr 11 - Apr 17 - Implement a simple LRU cache for a single processor <br>
