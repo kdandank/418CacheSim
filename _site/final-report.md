@@ -182,9 +182,9 @@ on the snooping bus, it NACKs the action, which causes the cache worker to retry
 avoids the livelock issue and ensures completion.
 
 ## 5. PLATFORM CHOICE
-> We have used C++ as the programming language, as this project mainly involves being able to read the
+> * We have used C++ as the programming language, as this project mainly involves being able to read the
 memory traces from input files and dumping them into an output file. This was easy to achieve in C++. <br>
-> For generating memory traces, we have modified and used Intel's pintool.
+> * For generating memory traces, we have modified and used Intel's pintool.
 
 ## 6. SCHEDULE
 > Apr 11 - Apr 17 - Implement a simple LRU cache for a single processor <br>

@@ -181,12 +181,17 @@ two caches keep retrying and giving way to each other. To avoid this, if a snoop
 on the snooping bus, it NACKs the action, which causes the cache worker to retry the transaction at a later time. This
 avoids the livelock issue and ensures completion.
 
-## 5. PLATFORM CHOICE
-> We have used C++ as the programming language, as this project mainly involves being able to read the
-memory traces from input files and dumping them into an output file. This was easy to achieve in C++. <br>
-> For generating memory traces, we have modified and used Intel's pintool.
+## 5. GRAPHS AND ANALYSIS
+> 1. MSIvMESI: This tests out an artificial trace that Read and Writes to unique addresses on separate cache lines. <br>
+> ![alt text][MSIvMESI] <br>
+> 2.
 
-## 6. SCHEDULE
+## 6. PLATFORM CHOICE
+> * We have used C++ as the programming language, as this project mainly involves being able to read the
+memory traces from input files and dumping them into an output file. This was easy to achieve in C++. <br>
+> * For generating memory traces, we have modified and used Intel's pintool.
+
+## 7. SCHEDULE
 > Apr 11 - Apr 17 - Implement a simple LRU cache for a single processor <br>
 > Apr 18 - Apr 24 - Add support for cache coherence protocols - MSI, MESI <br>
 > Apr 25 - May 01 - Add additional protocols - MOSI, MOESI, Dragon, Firefly, etc. <br>
@@ -203,6 +208,7 @@ memory traces from input files and dumping them into an output file. This was ea
 [MOESI.png]: http://wiki.expertiza.ncsu.edu/images/thumb/4/4e/MOESIfig.jpg/450px-MOESIfig.jpg "MOESI Protocol"
 [Dragon.png]: http://15418.courses.cs.cmu.edu/spring2017content/lectures/10_cachecoherence1/images/slide_038.jpg "Dragon Protocol"
 [basic_stats]: https://kshitizdange.github.io/418CacheSim/images/Basic_stats.png "Basic Stats Graph"
+[MSIvMESI]: https://kshitizdange.github.io/418CacheSim/images/MSIvMESI.png "MSIvMESI Stats Graph"
 
 
 
