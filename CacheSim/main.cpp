@@ -7,6 +7,7 @@
 #include "Protocol.h"
 #include "Bus.h"
 #include "Memory.h"
+#include <atomic>
 
 /**
  * Prints the usage for the program
@@ -28,11 +29,16 @@ void process_trace_file(std::string trace_filename) {
     std::string op;
     unsigned long addr;
 
-    while(tracefile >> thread_id) {
+    std::atomic<long> local_count(0);
+
+    while(tracefile >> std::dec >> thread_id) {
         tracefile >> op;
         tracefile >> std::hex >> addr;
         Protocol::process_mem_access(thread_id, op, addr);
+        local_count++;
     }
+
+    while(local_count != Protocol::trace_count);
 }
 
 /**
@@ -51,6 +57,7 @@ void process_trace_file(std::string trace_filename) {
 
 void print_mem_metrics(){
 
+    std::cout << "\nTotal Acceses = " << Protocol::trace_count;
     std::cout << "\nBus Transactions = " << Protocol::bus_transactions;
     std::cout << "\nMemory Requests = " << Protocol::mem_reqs;
     std::cout << "\nMemory Write Backs = " << Protocol::mem_write_backs;
