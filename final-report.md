@@ -19,30 +19,32 @@ clear understanding of the performance of each snooping based protocol.
 programs - one based on locks, so that the read/writes are in a FIFO manner; and other based on random (aka wild)
 access to the memory, which neither maintain consistency of data nor the order of transactions. We also designed some
 artificial test inputs to be able to clearly differentiate the performance of each snooping based protocol.
-
-## 3. APPROACH
+## 2.1. Snooping based cache protocols
 > The protocols that we have implemented are: <br>
 > Write-Invalidate Protocols <br>
-> 1. MSI <br>
-> ![alt text][MSI.png] <br>
-> 2. MESI <br>
-> ![alt text][MESI.png] <br>
-> 3. MOSI <br>
-> ![alt text][MOSI.png] <br>
-> 4. MOESI <br>
-> ![alt text][MOESI.png] <br>
+> 1\. MSI <br>
+> 2\. MESI <br>
+> 3\. MOSI <br>
+> 4\. MOESI <br><br>
 > Write-Update Protocols <br>
-> 1. Dragonfly (write-back update) <br>
-> ![alt text][Dragon.png] <br>
+> 1\. Dragonfly (write-back update) <br><br>
+> Hybrid Protocol <br>
+> 1\. Competitive Snooping(\*\*\*) - While studying about various snooping based protocol, we found this hybrid protocol
+intriguing. As it tries to combine the benefit of both write-invalidate and write-update protocols. It works by
+maintaining a counter for each cache line. On a snooping update it's decremented and on a processor access it's
+incremented. If on a snoop this counter reaches zero, instead of updating we invalidate the line. <br><br>
+> _(\*\*\*) This was not a part of our initial plan for the project, but since we are running ahead of our current schedule,
+we will try our best to get this in before the final deadline._
+> <br><br>
 > All of these protocols use write-allocate write-back caching. <br>
-> * Image Sources: <br>
-> MSI: https://en.wikipedia.org/wiki/MSI_protocol <br>
-> MESI: http://15418.courses.cs.cmu.edu/spring2017/lecture/cachecoherence1 <br>
-> MOSI: https://en.wikipedia.org/wiki/MOSI_protocol <br>
-> MOESI: http://wiki.expertiza.ncsu.edu/images/thumb/4/4e/MOESIfig.jpg/450px-MOESIfig.jpg <br>
-> Dragon: http://15418.courses.cs.cmu.edu/spring2017/lecture/cachecoherence1 <br>
+> Following are the **State Transition Diagrams** for above protocols. <br>
+> ![alt text][MSI.png] <br>
+> ![alt text][MESI.png] <br>
+> ![alt text][MOSI.png] <br>
+> ![alt text][MOESI.png] <br>
+> ![alt text][Dragon.png] <br>
 
-### 3.1. Working:
+## 3. APPROACH:
 > We use Intel’s pintool to instrument programs and generate memory traces for them. For this, we wrote our own pintool,
 which for each instruction, checks whether it has a memory access or not. If it has a memory access, then at runtime we
 record the following information: <br>
@@ -77,15 +79,15 @@ record the following information: <br>
 > -p Cache Coherence Protocol to use (MSI/MESI/MOSI/MOESI/Dragon)
 > -t The trace file to use
 > ```
-> * At initialization, we create caches for each processor, and we create two pThreads for each cache. One thread is
+> At initialization, we create caches for each processor, and we create two pThreads for each cache. One thread is
 responsible for handling requests from the processor and initiating bus transactions if necessary (processor
 transactions), while the other thread is responsible for responding to bus transactions (snooped bus transactions). For
 accesses to memory, we have simulated a split-transaction bus. We create a pThread to act as the memory controller. We
 have also added a small delay(of the order of couple ms), so that each memory request has some considerable latency
 associated with it. This also means that while a memory request is pending, another cache might request the same
 cacheline. This causes some interesting correctness issues that we will discuss later. <br>
-> * The high level workflow of our simulator is as follows: <br>
-> The main thread is responsible for reading the memory trace and instructing the appropriate caches to perform the
+>#### The high level workflow of our simulator:
+> * The main thread is responsible for reading the memory trace and instructing the appropriate caches to perform the
 required memory read/write. This is implemented using a signalling mechanism (mutex and condition variables). <br>
 > * When a cache worker receives the signal for the memory access, it checks the state of the cacheline which has the
 address and executes the protocol transitions if any. If the transition requires a snooping bus transaction, it
@@ -100,14 +102,14 @@ had the cacheline). In this case, we use the split transaction bus to request th
 memory writebacks and cache to cache transfers. <br>
 
 ### 3.3. Metrics Used for Comparison
-> 1. Number of Snooping Bus Transactions - The number of bus transactions that the protocol implementation requires
+> 1. Number of **Snooping Bus Transactions** - The number of bus transactions that the protocol implementation requires
 for the program. <br>
-> 2. Number of Memory requests - The number of cacheline loads that have to be served by main memory (and not another
+> 2. Number of **Memory Requests** - The number of cacheline loads that have to be served by main memory (and not another
 cache).  <br>
-> 3. Number of Memory writebacks - The number of times any cacheline has to be written back to main memory. <br>
-> 4. Number of Cache to Cache Transfers - The number of cacheline loads that are served by another cache. <br>
+> 3. Number of **Memory Write-Backs** - The number of times any cacheline has to be written back to main memory. <br>
+> 4. Number of **Cache to Cache Transfers** - The number of cacheline loads that are served by another cache. <br>
  <br> <br>
-> Ideally, we want as few bus transactions, memory requests, memory write-backs or cache to cache transfers as possible
+> Ideally, we want as few bus transactions, memory requests, memory write-backs, or cache to cache transfers as possible
 because all of them will have some amount of latency associated with them. If it is a choice between a memory request
 and a cache to cache transfer, we always prefer the latter, because a memory request will have much higher latency
 compared to getting data from another cache. <br>
@@ -142,21 +144,21 @@ caches can also NACK the transaction, if its own cache has a conflicting pending
 serviced by the split transaction bus. <br>
 
 ## 4.0. Protocols Low Level Design Choices:
-> We have designed all the aforementioned protocols so that a cache miss will try to be serviced from another cache
+> * We have designed all the aforementioned protocols so that a cache miss will try to be serviced from another cache
 (if a cache already has the data). This reduces the number of memory requests required. <br>
 > In MOSI and MOESI implementations, memory writebacks only happen when a cacheline in Modified or Owner state is
 evicted. If a cacheline is invalidated due to the protocol, the cache transfers the cacheline to the new owner of the
 cacheline. (We deem the cache which has a line in the Modified or Owner state to be the owner.) This enhances the
 effect of the additional Owner state. <br>
-> In our Dragon implementation, when a line is in the SharedClean or SharedModified state and tries to perform a write,
+> * In our Dragon implementation, when a line is in the SharedClean or SharedModified state and tries to perform a write,
 we first check whether it is the only cache holding the line or not. If it is the only one holding the cacheline, then
 instead of having to perform a BusUpdate and moving to the SharedModified state, it can simply move to the Modified
 state. This helps in the case where other caches have evicted that line causing only one cache to have the line. This
 saves on unnecessary bus transactions <br>
-> In Dragon write-back update, similar to MOSI and MOESI, a snooping bus transaction does not cause a memory writeback.
+> * In Dragon write-back update, similar to MOSI and MOESI, a snooping bus transaction does not cause a memory writeback.
 Only an eviction of a cacheline in a Modified or SharedModified state would cause a memory writeback. <br>
 > ### NACK
-> As mentioned earlier, our choice of implementation for the snooping bus and the split transaction bus can
+> * As mentioned earlier, our choice of implementation for the snooping bus and the split transaction bus can
 cause a snooping bus request to conflict with a pending split transaction bus. For example, while a memory load for a
 cacheline is pending in the request table from a read issued by one processor, another cache can be requesting
 exclusive access to the same cacheline on the snooping bus. In this case, if the cache with the pending request allows
@@ -174,6 +176,7 @@ compared to MSI. <br>
 > 3. MOESI vs Dragon: This tests out an artificial trace that shows write-update is significantly better when only one
 thread is writing and the other threads are reading. <br>
 > ![alt text][MOESIvDragon] <br>
+> ### We are in the process of adding more graphs here..
 
 ## 4. PLATFORM CHOICE
 > We used C++ as the programming language for creating both the pintools and the cache simulator.
@@ -230,7 +233,10 @@ rather than invalidating reduced the number of bus transactions. <br>
 
 ## 7. REFERENCES
 > 1. http://wiki.expertiza.ncsu.edu/index.php/CSC/ECE_506_Spring_2010/8a_sk?ref=driverlayer.com/image
-> 2. {TODO}
+> 2. Suleman, Linda Bigelow Veynu Narasiman Aater. "An Evaluation of Snoop-Based Cache Coherence Protocols."
+> 3. en.wikipedia.org
+> 4. 15-618 Course Slides
+> 5. {TODO}
 
 [//]: # (Links to images below this line)
 
