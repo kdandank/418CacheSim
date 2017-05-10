@@ -168,29 +168,29 @@ on the snooping bus, it NACKs the action, which causes the cache worker to retry
 avoids the livelock issue and ensures completion.
 
 ## 5. GRAPHS AND ANALYSIS
-> 1. MSI vs MESI: This tests out an artificial trace that Read and Writes to unique addresses on separate cache lines. <br>
+> 1. **MSI vs MESI**: This tests out an artificial trace that Read and Writes to unique addresses on separate cache lines. <br>
 > ![alt text][MSIvMESI] <br>
-> 2. MSI vs MOSI: This tests out an artificial trace that shows how write-backs are significantly reduced in MOSI as
+> 2. **MSI vs MOSI**: This tests out an artificial trace that shows how write-backs are significantly reduced in MOSI as
 compared to MSI. <br>
 > ![alt text][MSIvMOSI] <br>
-> 3. MOESI vs Dragon: This tests out an artificial trace that shows write-update is significantly better when only one
+> 3. **MOESI vs Dragon**: This tests out an artificial trace that shows write-update is significantly better when only one
 thread is writing and the other threads are reading. <br>
 > ![alt text][MOESIvDragon] <br>
-> 4. Lock Add: In this test all the threads try to add '1' to a global counter using locks. <br>
+> 4. **Lock Add**: In this test all the threads try to add '1' to a global counter using locks. <br>
 > ![alt text][lock-add] <br>
-> 5. Wild Add: In this test all the threads try to add '1' to a global counter without using locks. <br>
+> 5. **Wild Add**: In this test all the threads try to add '1' to a global counter without using locks. <br>
 > ![alt text][wild-add] <br>
-> 6. Lock Fill Bucket: This tests makes buckets for numbers, so that it can count how many times each number is
+> 6. **Lock Fill Bucket**: This tests makes buckets for numbers, so that it can count how many times each number is
 present in the array. This is done using locks. <br>
 > ![alt text][lock-fill] <br>
-> 7. Wild Fill Bucket: This tests makes buckets for numbers, so that it can count how many times each number is
+> 7. **Wild Fill Bucket**: This tests makes buckets for numbers, so that it can count how many times each number is
 present in the array. Locks are not used in this case. <br>
 > ![alt text][wild-fill] <br>
-> 8. Mandelbrot: This is the mandelbrot from Assignment 1. <br>
+> 8. **Mandelbrot**: This is the mandelbrot from Assignment 1. <br>
 > ![alt text][mandelbrot] <br>
-> 9. Pagerank: This is the Pagerank from Assignment 3, run on tiny.graph. <br>
+> 9. **Pagerank**: This is the Pagerank from Assignment 3, run on tiny.graph. <br>
 > ![alt text][pagerank] <br>
-> 10. BFS: This is the BFS top-down approach from from Assignment 3 run on grid_100x100. <br>
+> 10. **BFS**: This is the BFS top-down approach from from Assignment 3 run on grid_100x100. <br>
 > ![alt text][bfs] <br>
 > ### We are in the process of adding more graphs here..
 
