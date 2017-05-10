@@ -13,7 +13,7 @@ void dummy_instructions() {
 
     //int x = 100000;
     //while(x-- != 0);
-    //usleep(5000); // 50 ms
+    usleep(2000); // 2 ms
 }
 //#pragma optimize( "", on )
 

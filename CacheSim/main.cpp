@@ -67,8 +67,8 @@ void print_mem_metrics(){
 int main(int argc, char *argv[]) {
     int ch;
     int num_cores = 1;
-    int cache_size = 128;
-    int associativity = 4;
+    int cache_size = 1;
+    int associativity = 8;
     std::string protocol = "MSI";
     std::string trace_file = "trace.out";
 
