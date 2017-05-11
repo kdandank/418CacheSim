@@ -35,7 +35,7 @@ intriguing. As it tries to combine the benefit of both write-invalidate and writ
 maintaining a counter for each cache line. On a snooping update it's decremented and on a processor access it's
 incremented. If on a snoop this counter reaches zero, instead of updating we invalidate the line. <br><br>
 > _(\*\*\*) This was not a part of our initial plan for the project, but since we are running ahead of our current schedule,
-we will try our best to get this in before the final deadline._
+we will try our best to get this in before the final deadline. Some preliminary results have been updated now._
 > <br><br>
 > All of these protocols use write-allocate write-back caching. <br>
 > Following are the **State Transition Diagrams** for above protocols. <br>
@@ -193,6 +193,8 @@ present in the array. Locks are not used in this case. <br>
 > ![alt text][pagerank] <br>
 > 10. **BFS**: This is the BFS top-down approach from from Assignment 3 run on grid_100x100. <br>
 > ![alt text][bfs] <br>
+> 11. **Ocean**: This is the splash-2 ocean run with 4 processors and 18x18 grid. <br>
+> ![alt text][ocean] <br>
 > ### We are in the process of adding more graphs here..
 
 ## 4. PLATFORM CHOICE
@@ -269,5 +271,6 @@ rather than invalidating reduced the number of bus transactions. <br>
 [mandelbrot]: https://kshitizdange.github.io/418CacheSim/images/mandelbrot.png "mandelbrot"
 [pagerank]: https://kshitizdange.github.io/418CacheSim/images/pagerank.png "pagerank"
 [bfs]: https://kshitizdange.github.io/418CacheSim/images/bfs.png "bfs"
+[ocean]: https://kshitizdange.github.io/418CacheSim/images/ocean.png "ocean"
 
 
