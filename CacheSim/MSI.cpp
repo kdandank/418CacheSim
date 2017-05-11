@@ -10,6 +10,7 @@
 MSI::MSI(int cache_id) {
     id = cache_id;
     pthread_t tid;
+    pthread_mutex_init(&lock, NULL);
     pthread_create(&tid, NULL, request_worker, (void *) this);
     pthread_create(&tid, NULL, response_worker, (void *) this);
 }

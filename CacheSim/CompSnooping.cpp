@@ -10,6 +10,7 @@
 CompSnooping::CompSnooping(int cache_id) {
     id = cache_id;
     pthread_t tid;
+    pthread_mutex_init(&lock, NULL);
     pthread_create(&tid, NULL, request_worker, (void *) this);
     pthread_create(&tid, NULL, response_worker, (void *) this);
 }
@@ -37,6 +38,7 @@ void *CompSnooping::response_worker(void *arg) {
             case ShModified:
                 if(Bus::opt == BusRd) {
                     Bus::owner_id = obj->id;
+                    Bus::read_ex = false;
                 } else if(Bus::opt == BusUpdt) {
                     /* Invalidate if the processor does not access this address
                      * too often
@@ -46,14 +48,13 @@ void *CompSnooping::response_worker(void *arg) {
                     } else {
                         obj->cache.cache_decr_counter(Bus::addr);
                         obj->cache.cache_set_status(Bus::addr, ShClean);
+                        Bus::read_ex = false;
                     }
                 }
-                Bus::read_ex = false;
                 break;
             case Invalid:
                 break;
             case ShClean:
-                Bus::read_ex = false;
                 if(obj->pending_addr != Bus::addr) {
                     Bus::owner_id = obj->id;
                 }
@@ -64,6 +65,7 @@ void *CompSnooping::response_worker(void *arg) {
                     obj->cache.cache_set_status(Bus::addr, Invalid);
                 } else {
                     obj->cache.cache_decr_counter(Bus::addr);
+                    Bus::read_ex = false;
                 }
                 break;
             case Exclusive:
