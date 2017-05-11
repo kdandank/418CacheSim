@@ -23,8 +23,9 @@ class CacheLine
         unsigned long tag;
         cache_state status;
         unsigned long lru_num;
+        unsigned long counter;
         CacheLine();
-        CacheLine(unsigned long t, cache_state s);
+        CacheLine(unsigned long t, cache_state s, unsigned long ctr);
 };
 
 class Set
@@ -57,6 +58,10 @@ class Cache
         void insert_cache(unsigned long addr, cache_state status);
         cache_state cache_check_status(unsigned long addr);
         void cache_set_status(unsigned long addr, cache_state status);
+
+        unsigned long cache_get_counter(unsigned long addr);
+        void cache_incr_counter(unsigned long addr);
+        void cache_decr_counter(unsigned long addr);
 
         static void cache_init(unsigned long size, unsigned long ass);
 };

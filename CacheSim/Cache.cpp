@@ -6,6 +6,7 @@
 #include "Protocol.h"
 
 #define CACHE_LINE_SIZE (1 << (BLOCK_BITS))
+#define CLINE_CTR_THRESH 3
 
 unsigned long Cache::cache_lines;
 unsigned long Cache::cache_size;
@@ -15,10 +16,11 @@ unsigned long Cache::num_set;
 unsigned long Cache::set_bits;
 unsigned long Cache::set_mask;
 
-CacheLine::CacheLine(unsigned long t, cache_state s) {
+CacheLine::CacheLine(unsigned long t, cache_state s, unsigned long ctr) {
     tag = t;
     status = s;
     lru_num = 0;
+    counter = ctr;
 }
 
 Set::Set(unsigned long ass) {
@@ -26,7 +28,7 @@ Set::Set(unsigned long ass) {
     for(long i = 0; i < ass; i++) {
         unsigned long t = 0;
         cache_state s = Invalid;
-        cl.push_back(CacheLine(t, s));
+        cl.push_back(CacheLine(t, s, 0));
     }
 }
 
@@ -105,6 +107,7 @@ void Cache::insert_cache(unsigned long addr, cache_state status) {
             c.tag = tag;
             c.status = status;
             c.lru_num = s.current_lru;
+            c.counter = CLINE_CTR_THRESH;
 
             break;
 
@@ -134,6 +137,7 @@ void Cache::insert_cache(unsigned long addr, cache_state status) {
         evict.tag = tag;
         evict.status = status;
         evict.lru_num = s.current_lru;
+        evict.counter =  CLINE_CTR_THRESH;
 
         /* On eviction check if status indicates modification */
         if(evict.status == Modified || evict.status == Owner ||
@@ -174,6 +178,58 @@ void Cache::cache_set_status(unsigned long addr, cache_state status) {
     for(CacheLine &c: s.cl) {
         if(c.tag == tag) {
             c.status = status;
+            break;
+        }
+    }
+}
+
+unsigned long Cache::cache_get_counter(unsigned long addr) {
+
+    unsigned long set = (addr & set_mask) >> block_bits;
+    unsigned long tag_mask = ~((1 << (set_bits + block_bits)) - 1);
+    unsigned long tag = (addr & tag_mask) >> (set_bits + block_bits);
+
+    Set &s = sets[set];
+    unsigned long ctr = 0;
+
+    for(CacheLine &c: s.cl) {
+        if(c.tag == tag) {
+            ctr = c.counter;
+            break;
+        }
+    }
+
+    return ctr;
+}
+
+void Cache::cache_incr_counter(unsigned long addr) {
+
+    unsigned long set = (addr & set_mask) >> block_bits;
+    unsigned long tag_mask = ~((1 << (set_bits + block_bits)) - 1);
+    unsigned long tag = (addr & tag_mask) >> (set_bits + block_bits);
+
+    Set &s = sets[set];
+
+    for(CacheLine &c: s.cl) {
+        if(c.tag == tag) {
+            c.counter++;
+            break;
+        }
+    }
+}
+
+void Cache::cache_decr_counter(unsigned long addr) {
+
+    unsigned long set = (addr & set_mask) >> block_bits;
+    unsigned long tag_mask = ~((1 << (set_bits + block_bits)) - 1);
+    unsigned long tag = (addr & tag_mask) >> (set_bits + block_bits);
+
+    Set &s = sets[set];
+
+    for(CacheLine &c: s.cl) {
+        if(c.tag == tag) {
+            c.counter--;
+            assert(c.counter);
             break;
         }
     }
