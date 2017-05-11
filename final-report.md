@@ -1,8 +1,9 @@
 
 ## 1. SUMMARY
-> We have implemented a Cache Simulator for analyzing how different Snooping-Based Cache Coherence Protocols perform
-under various workloads. Given any program, we can use our simulator to compare the performance of various protocols,
-based on number of Bus Transactions, Memory Requests, Memory Write-Backs and Cache-to-Cache Transfers.
+> We have implemented a Cache Simulator for analyzing how different Snooping-Based Cache Coherence Protocols - MSI, MESI,
+MOSI, MOESI, Dragonfly, and Competitive Snooping; perform under various workloads. Given any program, we can use our
+simulator to compare the performance of various protocols, based on number of Bus Transactions, Memory Requests,
+Memory Write-Backs and Cache-to-Cache Transfers.
 
 ## 2. BACKGROUND
 > We have studied about different snooping based Cache Coherence Protocols in class. Whenever a processor wants to read
