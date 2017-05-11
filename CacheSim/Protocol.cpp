@@ -8,6 +8,7 @@
 #include "MOSI.h"
 #include "MOESI.h"
 #include "Dragon.h"
+#include "CompSnooping.h"
 #include "Cache.h"
 
 
@@ -49,6 +50,8 @@ void Protocol::initialize(std::string protocol, int num_cores, int cache_size,
             sn_caches.push_back(new MOESI(i));
         } else if(protocol == "Dragon") {
             sn_caches.push_back(new Dragon(i));
+        } else if(protocol == "CompSnooping") {
+            sn_caches.push_back(new CompSnooping(i));
         } else {
             assert(0);
         }
