@@ -149,7 +149,7 @@ cache worker does not have the cacheline, whether the snooping cache can provide
 caches can also NACK the transaction, if its own cache has a conflicting pending transaction that is waiting to be
 serviced by the split transaction bus. <br>
 
-## 4. Protocols Low Level Design Choices:
+## 4. PROTOCOLS' LOW LEVEL DESIGN CHOICES:
 > * We have designed all the aforementioned protocols so that a cache miss will try to be serviced from another cache
 (if a cache already has the data). This reduces the number of memory requests required. <br>
 > In MOSI and MOESI implementations, memory writebacks only happen when a cacheline in Modified or Owner state is
@@ -182,7 +182,7 @@ directory. The scripts are:
 > MSIvMESI.py
 > MSIvMOSI.py
 > MOESIvsDragon.py
-> ``` <br>
+> ```
 > For benchmarking and comparisons between the protocols, we wrote a few test programs - wild_add, lock_add, wild_fill_bucket,
 lock_fill_bucket. We also used our code from 15-618 assignments :- assignment 1 (mandelbrot) and assignment 3
 (pagerank and bfs topdown). Additionally, we used tests from the Splash 2 application suite. Except for Splash 2, all tests were run on ghc-42 with 16 threads. The caches were setup to have a size of 1MB with a set-associativity of 8. As for Splash2, it was run with 4 threads on our own machines. (The Splash2 tests required additional programs which were not available on GHC machines). The program sizes were purposely chosen to be small so that the memory traces do not get too large. The results from the tests are shown below.
