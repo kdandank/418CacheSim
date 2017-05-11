@@ -61,10 +61,14 @@ void *CompSnooping::response_worker(void *arg) {
                 /* Invalidate if the processor does not access this address
                  * too often
                  */
-                if(obj->cache.cache_get_counter(Bus::addr) <= 1) {
-                    obj->cache.cache_set_status(Bus::addr, Invalid);
+                if(Bus::opt == BusUpdt) {
+                    if(obj->cache.cache_get_counter(Bus::addr) <= 1) {
+                        obj->cache.cache_set_status(Bus::addr, Invalid);
+                    } else {
+                        obj->cache.cache_decr_counter(Bus::addr);
+                        Bus::read_ex = false;
+                    }
                 } else {
-                    obj->cache.cache_decr_counter(Bus::addr);
                     Bus::read_ex = false;
                 }
                 break;
