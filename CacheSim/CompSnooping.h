@@ -1,3 +1,11 @@
+/**
+ * Implementation specific to the Competitive Snooping protocol
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include "SnoopingCache.h"
 
 #ifndef _COMP_SNOOPING_H_

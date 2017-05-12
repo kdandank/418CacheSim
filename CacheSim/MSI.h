@@ -1,3 +1,11 @@
+/**
+ * Implementation specific to the MSI protocol
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include "SnoopingCache.h"
 
 #ifndef _MSI_H_

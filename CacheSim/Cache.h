@@ -1,3 +1,11 @@
+/**
+ * Cache implementation for the processor.
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #ifndef _CACHE_H_
 #define _CACHE_H_
 
@@ -7,6 +15,9 @@
 
 #define CACHE_BITS 6
 
+/**
+ * The states that the cache can be in.
+ */
 enum cache_state {
     Modified = 0,
     Shared,
@@ -17,6 +28,9 @@ enum cache_state {
     ShClean
 };
 
+/**
+ * Representation of the Cache Line within a cache-set.
+ */
 class CacheLine
 {
     public:
@@ -28,6 +42,9 @@ class CacheLine
         CacheLine(unsigned long t, cache_state s, unsigned long ctr);
 };
 
+/**
+ * Representation of Sets within a cache.
+ */
 class Set
 {
     public:
@@ -37,7 +54,9 @@ class Set
         Set(unsigned long ass);
 };
 
-
+/**
+ * This class represents the cache design.
+ */
 class Cache
 {
     private:

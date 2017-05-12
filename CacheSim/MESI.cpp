@@ -1,3 +1,11 @@
+/**
+ * Implementation specific to the MESI protocol
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include <assert.h>
 #include <pthread.h>
 #include "MESI.h"
@@ -15,6 +23,9 @@ MESI::MESI(int cache_id) {
     pthread_create(&tid, NULL, response_worker, (void *) this);
 }
 
+/**
+ * Implementation for the response worker thread for each cache.
+ */
 void *MESI::response_worker(void *arg) {
     MESI *obj = (MESI *) arg;
     pthread_mutex_lock(&Bus::resp_lock);
@@ -87,6 +98,9 @@ void *MESI::response_worker(void *arg) {
     }
 }
 
+/**
+ * Implementation for the request worker thread for each cache.
+ */
 void *MESI::request_worker(void *arg) {
     MESI *obj = (MESI *)arg;
     std::string op;
@@ -118,6 +132,9 @@ void *MESI::request_worker(void *arg) {
     return NULL;
 }
 
+/**
+ * This function defines how each and every cache state responds to different requests.
+ */
 void MESI::handle_request(MESI *obj, std::string op, unsigned long addr) {
     assert(addr);
     bool done = false;

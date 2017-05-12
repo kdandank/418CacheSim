@@ -1,3 +1,11 @@
+/**
+ * Implementation specific to the MSI protocol
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include <assert.h>
 #include <pthread.h>
 #include "MSI.h"
@@ -15,6 +23,9 @@ MSI::MSI(int cache_id) {
     pthread_create(&tid, NULL, response_worker, (void *) this);
 }
 
+/**
+ * Implementation for the response worker thread for each cache.
+ */
 void *MSI::response_worker(void *arg) {
     MSI *obj = (MSI *) arg;
     pthread_mutex_lock(&Bus::resp_lock);
@@ -73,6 +84,9 @@ void *MSI::response_worker(void *arg) {
     }
 }
 
+/**
+ * Implementation for the request worker thread for each cache.
+ */
 void *MSI::request_worker(void *arg) {
     MSI *obj = (MSI *)arg;
     std::string op;
@@ -104,6 +118,9 @@ void *MSI::request_worker(void *arg) {
     return NULL;
 }
 
+/**
+ * This function defines how each and every cache state responds to different requests.
+ */
 void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
     assert(addr);
     bool done = false;

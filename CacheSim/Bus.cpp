@@ -1,3 +1,11 @@
+/**
+ * Bus implementation for the system.
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include "Bus.h"
 #include "Protocol.h"
 #include <iostream>
@@ -15,6 +23,9 @@ bool Bus::read_ex;
 
 operations Bus::opt;
 
+/**
+ * Initializes the state that we need to maintain for bus instance.
+ */
 void Bus::init(int num_cores) {
 
     pthread_mutex_init(&req_lock, NULL);
@@ -31,6 +42,9 @@ void Bus::init(int num_cores) {
     pending_work = std::vector<bool>(num_cores, false);
 }
 
+/**
+ * Waits for responses on the bus
+ */
 void Bus::wait_for_responses(int id, unsigned long address, operations oper) {
 
     pthread_mutex_lock(&resp_lock);

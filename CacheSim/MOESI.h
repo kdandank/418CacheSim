@@ -1,3 +1,11 @@
+/**
+ * Implementation specific to the MOESI protocol
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include "SnoopingCache.h"
 
 #ifndef _MOESI_H_

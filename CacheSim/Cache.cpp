@@ -1,3 +1,11 @@
+/**
+ * Cache implementation for the processor.
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include <vector>
 #include <math.h>
 #include <assert.h>
@@ -44,6 +52,11 @@ Cache::Cache() {
     }
 }
 
+/**
+ * This function initializes the cache representation.
+ * It fills up the attributes that we need for each cache-line
+ * associated calculation and stores them for faster access.
+ */
 void Cache::cache_init(unsigned long size, unsigned long ass) {
 
     cache_size = size * (1 << 6);
@@ -56,6 +69,9 @@ void Cache::cache_init(unsigned long size, unsigned long ass) {
     set_mask = (num_set - 1) << block_bits;
 }
 
+/**
+ * Updates the LRU count related to an address in the cache line.
+*/
 void Cache::update_cache_lru(unsigned long addr) {
 
     unsigned long set = (addr & set_mask) >> block_bits;
@@ -84,6 +100,10 @@ void Cache::update_cache_lru(unsigned long addr) {
     }
 }
 
+/**
+ * Inserts an address into a cache line with the corresponding cache status.
+ * Also takes care of cache-evictions if required.
+*/
 void Cache::insert_cache(unsigned long addr, cache_state status) {
 
     unsigned long set = (addr & set_mask) >> block_bits;
@@ -147,6 +167,9 @@ void Cache::insert_cache(unsigned long addr, cache_state status) {
 
 }
 
+/**
+ * Retruns the State of the cache line associated with the address.
+*/
 cache_state Cache::cache_check_status(unsigned long addr) {
 
     unsigned long set = (addr & set_mask) >> block_bits;
@@ -166,6 +189,9 @@ cache_state Cache::cache_check_status(unsigned long addr) {
     return status;
 }
 
+/**
+ * This function sets the status associated with the address in the cache line.
+ */
 void Cache::cache_set_status(unsigned long addr, cache_state status) {
 
     unsigned long set = (addr & set_mask) >> block_bits;
@@ -182,6 +208,9 @@ void Cache::cache_set_status(unsigned long addr, cache_state status) {
     }
 }
 
+/**
+ * Gets the cache line counter for a Comp Snooping based cache.
+ */
 unsigned long Cache::cache_get_counter(unsigned long addr) {
 
     unsigned long set = (addr & set_mask) >> block_bits;
@@ -201,6 +230,9 @@ unsigned long Cache::cache_get_counter(unsigned long addr) {
     return ctr;
 }
 
+/**
+ * Increments the cache line counter for a Comp Snooping based cache.
+ */
 void Cache::cache_incr_counter(unsigned long addr) {
 
     unsigned long set = (addr & set_mask) >> block_bits;
@@ -217,6 +249,9 @@ void Cache::cache_incr_counter(unsigned long addr) {
     }
 }
 
+/**
+ * Decrements the cache line counter for a Comp Snooping based cache.
+ */
 void Cache::cache_decr_counter(unsigned long addr) {
 
     unsigned long set = (addr & set_mask) >> block_bits;

@@ -1,9 +1,18 @@
+/**
+ * Bus implementation for the system.
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #ifndef _BUS_H_
 #define _BUS_H_
 
 #include <pthread.h>
 #include <vector>
 
+/* Operations that can be performed on the bus. */
 enum operations {
         BusRd = 0,
         BusRdX,
@@ -11,6 +20,9 @@ enum operations {
         BusUpdt
 };
 
+/**
+ * Representation of the Bus
+ */
 class Bus {
 
 public:

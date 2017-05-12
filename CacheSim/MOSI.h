@@ -1,3 +1,11 @@
+/**
+ * Implementation specific to the MOSI protocol
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include "SnoopingCache.h"
 
 #ifndef _MOSI_H_

@@ -1,3 +1,11 @@
+/**
+ * Implementation specific to the Dragon protocol
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include <assert.h>
 #include <pthread.h>
 #include "Dragon.h"
@@ -15,6 +23,9 @@ Dragon::Dragon(int cache_id) {
     pthread_create(&tid, NULL, response_worker, (void *) this);
 }
 
+/**
+ * Implementation for the response worker thread for each cache.
+ */
 void *Dragon::response_worker(void *arg) {
     Dragon *obj = (Dragon *) arg;
     pthread_mutex_lock(&Bus::resp_lock);
@@ -73,6 +84,9 @@ void *Dragon::response_worker(void *arg) {
     }
 }
 
+/**
+ * Implementation for the request worker thread for each cache.
+ */
 void *Dragon::request_worker(void *arg) {
     Dragon *obj = (Dragon *)arg;
     std::string op;
@@ -104,6 +118,9 @@ void *Dragon::request_worker(void *arg) {
     return NULL;
 }
 
+/**
+ * This function defines how each and every cache state responds to different requests.
+ */
 void Dragon::handle_request(Dragon *obj, std::string op, unsigned long addr) {
     assert(addr);
 

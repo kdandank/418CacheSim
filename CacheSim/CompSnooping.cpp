@@ -1,3 +1,11 @@
+/**
+ * Implementation specific to the Competitive Snooping protocol
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include <assert.h>
 #include <pthread.h>
 #include "CompSnooping.h"
@@ -15,6 +23,9 @@ CompSnooping::CompSnooping(int cache_id) {
     pthread_create(&tid, NULL, response_worker, (void *) this);
 }
 
+/**
+ * Implementation for the response worker thread for each cache.
+ */
 void *CompSnooping::response_worker(void *arg) {
     CompSnooping *obj = (CompSnooping *) arg;
     pthread_mutex_lock(&Bus::resp_lock);
@@ -94,6 +105,9 @@ void *CompSnooping::response_worker(void *arg) {
     }
 }
 
+/**
+ * Implementation for the request worker thread for each cache.
+ */
 void *CompSnooping::request_worker(void *arg) {
     CompSnooping *obj = (CompSnooping *)arg;
     std::string op;
@@ -125,6 +139,9 @@ void *CompSnooping::request_worker(void *arg) {
     return NULL;
 }
 
+/**
+ * This function defines how each and every cache state responds to different requests.
+ */
 void CompSnooping::handle_request(CompSnooping *obj, std::string op, unsigned long addr) {
     assert(addr);
 

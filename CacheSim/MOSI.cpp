@@ -1,3 +1,11 @@
+/**
+ * Implementation specific to the MOSI protocol
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include <assert.h>
 #include <pthread.h>
 #include "MOSI.h"
@@ -15,6 +23,9 @@ MOSI::MOSI(int cache_id) {
     pthread_create(&tid, NULL, response_worker, (void *) this);
 }
 
+/**
+ * Implementation for the response worker thread for each cache.
+ */
 void *MOSI::response_worker(void *arg) {
     MOSI *obj = (MOSI *) arg;
     pthread_mutex_lock(&Bus::resp_lock);
@@ -82,6 +93,9 @@ void *MOSI::response_worker(void *arg) {
     }
 }
 
+/**
+ * Implementation for the request worker thread for each cache.
+ */
 void *MOSI::request_worker(void *arg) {
     MOSI *obj = (MOSI *)arg;
     std::string op;
@@ -113,6 +127,9 @@ void *MOSI::request_worker(void *arg) {
     return NULL;
 }
 
+/**
+ * This function defines how each and every cache state responds to different requests.
+ */
 void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
     assert(addr);
     bool done = false;

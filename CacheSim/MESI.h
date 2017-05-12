@@ -1,3 +1,11 @@
+/**
+ * Implementation specific to the MESI protocol
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include "SnoopingCache.h"
 
 #ifndef _MESI_H_

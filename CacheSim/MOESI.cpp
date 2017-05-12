@@ -1,3 +1,11 @@
+/**
+ * Implementation specific to the MOESI protocol
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include <assert.h>
 #include <pthread.h>
 #include "MOESI.h"
@@ -15,6 +23,9 @@ MOESI::MOESI(int cache_id) {
     pthread_create(&tid, NULL, response_worker, (void *) this);
 }
 
+/**
+ * Implementation for the response worker thread for each cache.
+ */
 void *MOESI::response_worker(void *arg) {
     MOESI *obj = (MOESI *) arg;
     pthread_mutex_lock(&Bus::resp_lock);
@@ -99,6 +110,9 @@ void *MOESI::response_worker(void *arg) {
     }
 }
 
+/**
+ * Implementation for the request worker thread for each cache.
+ */
 void *MOESI::request_worker(void *arg) {
     MOESI *obj = (MOESI *)arg;
     std::string op;
@@ -130,6 +144,9 @@ void *MOESI::request_worker(void *arg) {
     return NULL;
 }
 
+/**
+ * This function defines how each and every cache state responds to different requests.
+ */
 void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
     assert(addr);
     bool done = false;

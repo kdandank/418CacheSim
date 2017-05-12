@@ -1,3 +1,11 @@
+/**
+ * Implementation specific to the Dragon protocol
+ *
+ * Authors:
+ *     Kshitiz Dange (KDANGE)
+ *     Yash Tibrewal (YTIBREWA)
+ */
+
 #include "SnoopingCache.h"
 
 #ifndef _DRAGON_H_
