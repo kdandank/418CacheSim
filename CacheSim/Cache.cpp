@@ -33,7 +33,6 @@ Set::Set(unsigned long ass) {
 }
 
 Cache::Cache() {
-    //unsigned long line_size = cache_size / CACHE_LINE_SIZE;
     unsigned long num_sets = cache_size / associativity;
 
     // #######

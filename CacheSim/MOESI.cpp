@@ -22,7 +22,6 @@ void *MOESI::response_worker(void *arg) {
         while(!Bus::pending_work[obj->id]) {
             pthread_cond_wait(&Bus::resp_cvar, &Bus::resp_lock);
         }
-        //std::cout<<"Thread "<<obj->id<<" to respond\n";
         pthread_mutex_unlock(&Bus::resp_lock);
 
         pthread_mutex_lock(&obj->lock);
@@ -97,7 +96,6 @@ void *MOESI::response_worker(void *arg) {
         if(Bus::resp_count == Protocol::num_cores - 1) {
             pthread_cond_signal(&Bus::req_cvar);
         }
-        //std::cout<<"Thread "<<obj->id<<" done responding\n";
     }
 }
 
@@ -108,11 +106,9 @@ void *MOESI::request_worker(void *arg) {
 
     pthread_mutex_lock(&Protocol::lock);
     while(true) {
-        //fflush(stdout);
         while(!Protocol::ready || Protocol::request_id != obj->id) {
             pthread_cond_wait(&Protocol::worker_cv, &Protocol::lock);
         }
-        //fflush(stdout);
         std::cout<<"Thread "<<obj->id<< " got request "<< op <<" " << Protocol::request_addr<<"\n";
         op = Protocol::request_op;
         addr = Protocol::request_addr;
@@ -127,7 +123,6 @@ void *MOESI::request_worker(void *arg) {
         handle_request(obj, op, addr);
         std::cout<<"Thread " << obj->id<<" Done with request\n";
         pthread_mutex_lock(&Protocol::lock);
-        //std::cout<<"done handling\n";
         fflush(stdout);
         Protocol::trace_count++;
     }
@@ -170,9 +165,7 @@ void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
                 assert(op == "W");
                 obj->cache.update_cache_lru(addr);
                 obj->opt = BusUpg;
-                //std::cout<<"Before wait\n";
                 Bus::wait_for_responses(obj->id, addr, BusUpg);
-                //std::cout<<"After wait\n";
                 if(Bus::recv_nak) {
                     done = false;
                 } else {
@@ -183,9 +176,7 @@ void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
             case Invalid:
                 if(op == "R") {
                     obj->opt = BusRd;
-                    //std::cout<<"Before wait\n";
                     Bus::wait_for_responses(obj->id, addr, BusRd);
-                    //std::cout<<"After wait\n";
                     if(Bus::recv_nak) {
                         done = false;
                     } else {
@@ -230,7 +221,6 @@ void MOESI::handle_request(MOESI *obj, std::string op, unsigned long addr) {
                 obj->pending_addr = 0;
                 pthread_mutex_unlock(&obj->lock);
             }
-            //std::cout<<"Done with memory request\n";
         }
     }
 }

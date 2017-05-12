@@ -29,10 +29,6 @@ void Bus::init(int num_cores) {
     read_ex = true;
 
     pending_work = std::vector<bool>(num_cores, false);
-    /*for(int i = 0; i < Protocol::num_cores; i++) {
-        pending_work.push_back(false);
-    }
-    std::cout<<pending_work[0];*/
 }
 
 void Bus::wait_for_responses(int id, unsigned long address, operations oper) {

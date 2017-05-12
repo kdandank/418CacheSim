@@ -89,11 +89,9 @@ void *MOSI::request_worker(void *arg) {
 
     pthread_mutex_lock(&Protocol::lock);
     while(true) {
-        //fflush(stdout);
         while(!Protocol::ready || Protocol::request_id != obj->id) {
             pthread_cond_wait(&Protocol::worker_cv, &Protocol::lock);
         }
-        //fflush(stdout);
         std::cout<<"Thread "<<obj->id<< " got request\n";
         op = Protocol::request_op;
         addr = Protocol::request_addr;
@@ -108,7 +106,6 @@ void *MOSI::request_worker(void *arg) {
         handle_request(obj, op, addr);
         std::cout<<"Thread " << obj->id<<" Done with request\n";
         pthread_mutex_lock(&Protocol::lock);
-        //std::cout<<"done handling\n";
         fflush(stdout);
         Protocol::trace_count++;
     }
@@ -201,7 +198,6 @@ void MOSI::handle_request(MOSI *obj, std::string op, unsigned long addr) {
                 obj->pending_addr = 0;
                 pthread_mutex_unlock(&obj->lock);
             }
-            //std::cout<<"Done with memory request\n";
         }
    }
 }

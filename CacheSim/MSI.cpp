@@ -22,7 +22,6 @@ void *MSI::response_worker(void *arg) {
         while(!Bus::pending_work[obj->id]) {
             pthread_cond_wait(&Bus::resp_cvar, &Bus::resp_lock);
         }
-        //std::cout<<"Thread "<<obj->id<<" to respond\n";
         pthread_mutex_unlock(&Bus::resp_lock);
 
         pthread_mutex_lock(&obj->lock);
@@ -71,7 +70,6 @@ void *MSI::response_worker(void *arg) {
         if(Bus::resp_count == Protocol::num_cores - 1) {
             pthread_cond_signal(&Bus::req_cvar);
         }
-        //std::cout<<"Thread "<<obj->id<<" done responding\n";
     }
 }
 
@@ -82,11 +80,9 @@ void *MSI::request_worker(void *arg) {
 
     pthread_mutex_lock(&Protocol::lock);
     while(true) {
-        //fflush(stdout);
         while(!Protocol::ready || Protocol::request_id != obj->id) {
             pthread_cond_wait(&Protocol::worker_cv, &Protocol::lock);
         }
-        //fflush(stdout);
         std::cout<<"Thread "<<obj->id<< " got request\n";
         op = Protocol::request_op;
         addr = Protocol::request_addr;
@@ -101,7 +97,6 @@ void *MSI::request_worker(void *arg) {
         handle_request(obj, op, addr);
         std::cout<<"Thread " << obj->id<<" Done with request\n";
         pthread_mutex_lock(&Protocol::lock);
-        //std::cout<<"done handling\n";
         fflush(stdout);
         Protocol::trace_count++;
     }
@@ -137,9 +132,7 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
                 assert(op == "W");
                 obj->cache.update_cache_lru(addr);
                 obj->opt = BusRdX;
-                //std::cout<<"Before wait\n";
                 Bus::wait_for_responses(obj->id, addr, BusRdX);
-                //std::cout<<"After wait\n";
                 if(Bus::recv_nak) {
                     done = false;
                 } else {
@@ -149,9 +142,7 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
             case Invalid:
                 if(op == "R") {
                     obj->opt = BusRd;
-                    //std::cout<<"Before wait\n";
                     Bus::wait_for_responses(obj->id, addr, BusRd);
-                    //std::cout<<"After wait\n";
                     if(Bus::recv_nak) {
                         done = false;
                     } else {
@@ -189,7 +180,6 @@ void MSI::handle_request(MSI *obj, std::string op, unsigned long addr) {
                 obj->pending_addr = 0;
                 pthread_mutex_unlock(&obj->lock);
             }
-            //std::cout<<"Done with memory request\n";
         }
 
     }

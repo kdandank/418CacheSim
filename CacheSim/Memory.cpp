@@ -11,8 +11,6 @@ pthread_cond_t Memory::req_cv;
 //#pragma optimize( "", off )
 void dummy_instructions() {
 
-    //int x = 100000;
-    //while(x-- != 0);
     usleep(2000); // 2 ms
 }
 //#pragma optimize( "", on )
@@ -34,28 +32,24 @@ void Memory::initialize() {
 }
 
 void *Memory::memory_worker(void *arg) {
-    //std::cout<<"Memory worker here\n";
     pthread_mutex_lock(&lock);
     while(true) {
         /* Wait while request table is empty */
         while(req_table.empty()) {
-            //std::cout<<"request table empty\n";
             pthread_cond_wait(&req_cv, &lock);
-            //std::cout<<"waking up\n";
         }
         Protocol::mem_reqs++;
-        //std::cout<<"got a new request\n";
         pthread_mutex_unlock(&lock);
-        // wait logic - add latency
+
+        // wait logic - adds latency
         dummy_instructions();
-        //
+
         pthread_mutex_lock(&lock);
         MemRequest *req = req_table.front();
         req->done = true;
         /* Multiple caches might be waiting on this */
         pthread_cond_broadcast(&req->cv);
         req_table.pop_front();
-        //std::cout<<"Memory done with request\n";
     }
 
     /* Never exits */
@@ -98,11 +92,8 @@ void Memory::request(unsigned long addr) {
     /* Original thread waits till request is done and while there are no more
      * additional waiters
      */
-    //std::cout<<"Waiting for memory\n";
     while(!req.done || req.waiters != 0) {
         pthread_cond_wait(&req.cv, &lock);
-        //std::cout<<req.done<<"\t"<<req.waiters<<"\n";
     }
-    //std::cout<<"Woke up\n";
     pthread_mutex_unlock(&lock);
 }

@@ -13,7 +13,7 @@
  * Prints the usage for the program
  */
 void print_usage() {
-    std::cout << "./cache_sim [-c <Cache_size in MB>] [-a <Set Associativity>]"
+    std::cout << "./cache_sim [-c <Number of cores>] [-s <Cache_size in MB>] [-a <Set Associativity>]"
                     " [-p <Cache Coherence Protocol>] [-t <Trace File>]\n";
 }
 
@@ -40,20 +40,6 @@ void process_trace_file(std::string trace_filename) {
 
     while(local_count != Protocol::trace_count);
 }
-
-/**
- * Creates num_cores number of cache objects
- * @param num_cores The number of cores
- * @return A vector of the cache objects
- */
-/*std::vector<Cache> create_cache_objects(int cache_size, int associativity,
-                                            int num_cores) {
-    std::vector<Cache> caches;
-    for(int i = 0; i < num_cores; i++) {
-        caches.push_back(Cache(cache_size, associativity));
-    }
-    return caches;
-}*/
 
 void print_mem_metrics(){
 

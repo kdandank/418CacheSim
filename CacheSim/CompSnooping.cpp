@@ -22,7 +22,6 @@ void *CompSnooping::response_worker(void *arg) {
         while(!Bus::pending_work[obj->id]) {
             pthread_cond_wait(&Bus::resp_cvar, &Bus::resp_lock);
         }
-        //std::cout<<"Thread "<<obj->id<<" to respond\n";
         pthread_mutex_unlock(&Bus::resp_lock);
 
         pthread_mutex_lock(&obj->lock);
@@ -92,7 +91,6 @@ void *CompSnooping::response_worker(void *arg) {
         if(Bus::resp_count == Protocol::num_cores - 1) {
             pthread_cond_signal(&Bus::req_cvar);
         }
-        //std::cout<<"Thread "<<obj->id<<" done responding\n";
     }
 }
 
@@ -103,11 +101,9 @@ void *CompSnooping::request_worker(void *arg) {
 
     pthread_mutex_lock(&Protocol::lock);
     while(true) {
-        //fflush(stdout);
         while(!Protocol::ready || Protocol::request_id != obj->id) {
             pthread_cond_wait(&Protocol::worker_cv, &Protocol::lock);
         }
-        //fflush(stdout);
         std::cout<<"Thread "<<obj->id<< " got request\n";
         op = Protocol::request_op;
         addr = Protocol::request_addr;
@@ -122,7 +118,6 @@ void *CompSnooping::request_worker(void *arg) {
         handle_request(obj, op, addr);
         std::cout<<"Thread " << obj->id<<" Done with request\n";
         pthread_mutex_lock(&Protocol::lock);
-        //std::cout<<"done handling\n";
         fflush(stdout);
         Protocol::trace_count++;
     }
@@ -163,9 +158,7 @@ void CompSnooping::handle_request(CompSnooping *obj, std::string op, unsigned lo
             obj->cache.cache_incr_counter(addr);
             obj->cache.update_cache_lru(addr);
             obj->opt = BusUpdt;
-            //std::cout<<"Before wait\n";
             Bus::wait_for_responses(obj->id, addr, BusUpdt);
-            //std::cout<<"After wait\n";
             if(Bus::read_ex == true) {
                 obj->cache.cache_set_status(addr, Modified);
             } else {
@@ -180,9 +173,7 @@ void CompSnooping::handle_request(CompSnooping *obj, std::string op, unsigned lo
             obj->cache.cache_incr_counter(addr);
             obj->cache.update_cache_lru(addr);
             obj->opt = BusUpdt;
-            //std::cout<<"Before wait\n";
             Bus::wait_for_responses(obj->id, addr, BusUpdt);
-            //std::cout<<"After wait\n";
             if(Bus::read_ex == true) {
                 obj->cache.cache_set_status(addr, Modified);
             } else {
@@ -195,9 +186,7 @@ void CompSnooping::handle_request(CompSnooping *obj, std::string op, unsigned lo
         case Invalid:
             if(op == "R") {
                 obj->opt = BusRd;
-                //std::cout<<"Before wait\n";
                 Bus::wait_for_responses(obj->id, addr, BusRd);
-                //std::cout<<"After wait\n";
 
                 if(Bus::read_ex == true) {
                     obj->cache.insert_cache(addr, Exclusive);
