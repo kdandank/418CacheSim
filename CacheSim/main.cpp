@@ -1,3 +1,11 @@
+/**
+ * The main file for the Cache simulator
+ *
+ * Authors :-
+ * Kshitiz Dange <kdange@andrew.cmu.edu>
+ * Yash Tibrewal <ytibrewa@andrew.cmu.edu>
+ */
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -17,6 +25,9 @@ void print_usage() {
                     " [-p <Cache Coherence Protocol>] [-t <Trace File>]\n";
 }
 
+/**
+ * Processes the input trace file line by line
+ */
 void process_trace_file(std::string trace_filename) {
     std::ifstream tracefile(trace_filename.c_str());
     if(!tracefile) {
@@ -41,6 +52,9 @@ void process_trace_file(std::string trace_filename) {
     while(local_count != Protocol::trace_count);
 }
 
+/**
+ * Displays the results
+ */
 void print_mem_metrics(){
 
     std::cout << "\nTotal Acceses = " << Protocol::trace_count;

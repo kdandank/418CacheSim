@@ -1,3 +1,11 @@
+/**
+ * The interface for the base class of all the protocols
+ *
+ * Authors :-
+ * Kshitiz Dange <kdange@andrew.cmu.edu>
+ * Yash Tibrewal <ytibrewa@andrew.cmu.edu>
+ */
+
 #ifndef _SNOOPING_CACHE_H_
 #define _SNOOPING_CACHE_H_
 

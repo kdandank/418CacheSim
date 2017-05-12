@@ -1,3 +1,11 @@
+/**
+ * This file contains the implementation for the memory simulator
+ *
+ * Authors :-
+ * Kshitiz Dange <kdange@andrew.cmu.edu>
+ * Yash Tibrewal <ytibrewa@andrew.cmu.edu>
+ */
+
 #include <iostream>
 #include "Memory.h"
 #include "Protocol.h"
@@ -8,6 +16,9 @@ std::list<MemRequest *> Memory::req_table;
 pthread_cond_t Memory::threads_cv;
 pthread_cond_t Memory::req_cv;
 
+/**
+ * Adds latency to the memory operation
+ */
 //#pragma optimize( "", off )
 void dummy_instructions() {
 
@@ -15,6 +26,9 @@ void dummy_instructions() {
 }
 //#pragma optimize( "", on )
 
+/**
+ * Constructor
+ */
 MemRequest::MemRequest(unsigned long a) {
     addr = a;
     pthread_cond_init(&cv, NULL);
@@ -22,6 +36,9 @@ MemRequest::MemRequest(unsigned long a) {
     waiters = 0;
 }
 
+/**
+ * Initializes the memory worker and the synchronization primitives
+ */
 void Memory::initialize() {
     pthread_mutex_init(&lock, NULL);
     pthread_cond_init(&threads_cv, NULL);
@@ -31,6 +48,9 @@ void Memory::initialize() {
     pthread_create(&tid, NULL, memory_worker, NULL);
 }
 
+/**
+ * The worker function for the memory thread
+ */
 void *Memory::memory_worker(void *arg) {
     pthread_mutex_lock(&lock);
     while(true) {
@@ -57,6 +77,10 @@ void *Memory::memory_worker(void *arg) {
     return NULL;
 }
 
+/**
+ * This function is called by the cache workers to request a cacheline from
+ * memory
+ */
 void Memory::request(unsigned long addr) {
     pthread_mutex_lock(&lock);
 

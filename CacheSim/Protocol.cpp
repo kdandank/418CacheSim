@@ -1,3 +1,12 @@
+/**
+ * The implementation for the Protocol class. Holds the important state for
+ * the cache simulator to work
+ *
+ * Authors :-
+ * Kshitiz Dange <kdange@andrew.cmu.edu>
+ * Yash Tibrewal <ytibrewa@andrew.cmu.edu>
+ */
+
 #include <iostream>
 #include <pthread.h>
 #include <vector>
@@ -59,7 +68,7 @@ void Protocol::initialize(std::string protocol, int num_cores, int cache_size,
 }
 
 /**
- *
+ * Called by the trace worker to forward a request to proper processor
  */
 void Protocol::process_mem_access(int thread_id, std::string op,
                                             unsigned long addr) {
