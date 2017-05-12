@@ -16,7 +16,7 @@ layout: default
   </tr>
   <tr>
     <td>Friday 05/12</td>
-    <td><a href="https://kshitizdange.github.io/418CacheSim/images/Final_Presentation.pdf"> Presentation PDF</a>
-           <a href="https://kshitizdange.github.io/418CacheSim/images/Presentation.key"> Presentation Keynote</td>
+    <td><a href="https://kshitizdange.github.io/418CacheSim/images/Final_Presentation.pdf"> Presentation PDF</a> |
+           <a href="https://kshitizdange.github.io/418CacheSim/images/Presentation.key"> Presentation Keynote </a></td>
     </tr>
 </table>
